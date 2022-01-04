@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-var letters = []string{"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"}
+var letters = map[string]bool{"a": true, "b": true, "c": true, "d": true, "e": true, "f": true, "g": true, "h": true, "i": true, "j": true, "k": true, "l": true, "m": true, "n": true, "o": true, "p": true, "q": true, "r": true, "s": true, "t": true, "u": true, "v": true, "w": true, "x": true, "y": true, "z": true}
 var validWords = []string{}
 var dictionary = map[string]int{}
 var histogram = map[string]int{}
@@ -20,18 +20,34 @@ func main() {
 	err := readValidWords()
 	check(err)
 
-	// Generate histogram
-	fmt.Println("Building histogram...")
-	buildHistogram()
+	reader := bufio.NewReader(os.Stdin)
+	for {
+		// Generate histogram
+		fmt.Println("Building histogram...")
+		buildHistogram()
 
-	// Rank words based on frequency
-	fmt.Println("Ranking words...")
-	rankWords()
+		// Rank words based on frequency
+		fmt.Println("Ranking words...")
+		rankWords()
 
-	fmt.Printf("%+v\n", histogram)
-	for i := 0; i < 10; i++ {
-		rank := rankedWords[i]
-		fmt.Printf("%s: %d\n", rank.Key, rank.Value)
+		// Print the top 10 answers
+		fmt.Println("Top answers:")
+		for i := 0; i < 10; i++ {
+			rank := rankedWords[i]
+			fmt.Printf("  %s: %d\n", rank.Key, rank.Value)
+		}
+
+		// Read from stdin letters to eliminate
+		fmt.Print("Enter letters to eliminate eg afb: ")
+		input, _ := reader.ReadString('\n')
+		parts := strings.Split(input, "")
+		for _, chr := range parts {
+			// Ignore anything not in the map
+			if _, ok := letters[chr]; ok {
+				letters[chr] = false
+				fmt.Printf("removed %s\n", chr)
+			}
+		}
 	}
 }
 
@@ -66,7 +82,7 @@ func readValidWords() error {
 
 func buildHistogram() {
 	histogram = make(map[string]int, len(letters))
-	for _, l := range letters {
+	for l := range letters {
 		histogram[l] = 0
 	}
 
@@ -77,6 +93,10 @@ func buildHistogram() {
 		// Loop through each char and update the histogram
 		checkedChars := map[string]bool{}
 		for _, chr := range chrs {
+			// Ignore removed letters
+			if !letters[chr] {
+				continue
+			}
 			// If we've not already processed this letter
 			if _, ok := checkedChars[chr]; !ok {
 				histogram[chr]++
@@ -92,6 +112,7 @@ func rankWords() {
 	for _, word := range validWords {
 		chrs := strings.Split(word, "")
 		// First set the score based on the letters that exist
+		// TODO score based on letter position too
 		checkedChars := map[string]bool{}
 		score := 0
 		for _, chr := range chrs {
