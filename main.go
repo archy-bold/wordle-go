@@ -8,17 +8,22 @@ import (
 	"strings"
 )
 
+const NUM_LETTERS = 5
+
 var letters = map[string]bool{"a": true, "b": true, "c": true, "d": true, "e": true, "f": true, "g": true, "h": true, "i": true, "j": true, "k": true, "l": true, "m": true, "n": true, "o": true, "p": true, "q": true, "r": true, "s": true, "t": true, "u": true, "v": true, "w": true, "x": true, "y": true, "z": true}
 var validWords = []string{}
 var dictionary = map[string]int{}
 var histogram = map[string]int{}
 var rankedWords PairList
+var answers []string
 
 func main() {
 	// Read the valid words
 	fmt.Println("Reading words...")
 	err := readValidWords()
 	check(err)
+
+	answers = make([]string, NUM_LETTERS)
 
 	reader := bufio.NewReader(os.Stdin)
 	for {
@@ -45,7 +50,17 @@ func main() {
 			// Ignore anything not in the map
 			if _, ok := letters[chr]; ok {
 				letters[chr] = false
-				fmt.Printf("removed %s\n", chr)
+			}
+		}
+
+		// Read from stdin correct letters
+		fmt.Print("Enter correctly positioned letters eg --a-b: ")
+		input, _ = reader.ReadString('\n')
+		parts = strings.Split(input, "")
+		for i, chr := range parts {
+			// Ignore anything not in the map
+			if _, ok := letters[chr]; ok && i < NUM_LETTERS {
+				answers[i] = chr
 			}
 		}
 	}
@@ -115,7 +130,13 @@ func rankWords() {
 		// TODO score based on letter position too
 		checkedChars := map[string]bool{}
 		score := 0
-		for _, chr := range chrs {
+		for i, chr := range chrs {
+			// If there is an answer in this position, we can disregard words that don't have that letter in that position
+			if answers[i] != "" && answers[i] != chr {
+				score = 0
+				break
+			}
+
 			if _, ok := checkedChars[chr]; !ok {
 				score += histogram[chr]
 				checkedChars[chr] = true
