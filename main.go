@@ -95,7 +95,7 @@ func main() {
 		outputBoard()
 
 		if numCorrect == NUM_LETTERS {
-			fmt.Println("Hooray!")
+			fmt.Printf("Hooray! (%d/%d)\n", len(board), NUM_ATTEMPTS)
 			return
 		}
 	}
