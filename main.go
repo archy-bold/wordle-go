@@ -25,6 +25,7 @@ var histogram = map[string]int{}
 var rankedWords PairList
 var answersCorrect []string
 var answersIncorrect [][]string
+var answersIncorrectAll []string
 var board []string
 
 func main() {
@@ -60,6 +61,7 @@ func main() {
 		}
 
 		// Read the entered word from stdin
+		answersIncorrectAll = make([]string, 0)
 		// TODO handle errors such as wrong sized word, wrong pattern for response
 		fmt.Print("Enter number of entered word, or word itself: ")
 		word, _ := reader.ReadString('\n')
@@ -82,12 +84,15 @@ func main() {
 			} else if chr == "o" {
 				boardRow += COLOUR_YELLOW
 				answersIncorrect[i] = append(answersIncorrect[i], wordParts[i])
+				answersIncorrectAll = append(answersIncorrectAll, wordParts[i])
 			}
 			boardRow += wordParts[i] + COLOUR_RESET
 		}
 		board = append(board, boardRow)
 
 		outputBoard()
+
+		// TODO exit if correct
 	}
 }
 
@@ -95,6 +100,21 @@ func check(e error) {
 	if e != nil {
 		panic(e)
 	}
+}
+
+// difference returns the elements in `a` that aren't in `b`.
+func difference(a, b []string) []string {
+	mb := make(map[string]struct{}, len(b))
+	for _, x := range b {
+		mb[x] = struct{}{}
+	}
+	var diff []string
+	for _, x := range a {
+		if _, found := mb[x]; !found {
+			diff = append(diff, x)
+		}
+	}
+	return diff
 }
 
 func readValidWords() error {
@@ -149,32 +169,50 @@ func buildHistogram() {
 func rankWords() {
 	rankedWords = make(PairList, len(validWords))
 
+word:
 	for _, word := range validWords {
 		chrs := strings.Split(word, "")
 		// First set the score based on the letters that exist
 		// TODO score based on letter position too
 		checkedChars := map[string]bool{}
 		score := 0
-	character:
+
+		// Check if any of the incorrect answers don't appear in the word
+		if len(answersIncorrectAll) > 0 {
+			diff := difference(answersIncorrectAll, chrs)
+			if len(diff) > 0 {
+				rankedWords = append(rankedWords, Pair{word, 0})
+				continue word
+			}
+		}
+
 		for i, chr := range chrs {
 			// If there is an answer in this position, we can disregard words that don't have that letter in that position
 			if answersCorrect[i] != "" && answersCorrect[i] != chr {
-				score = 0
-				break
+				rankedWords = append(rankedWords, Pair{word, 0})
+				continue word
 			}
 
 			// Also check if there's an incorrect answer in this position
 			if len(answersIncorrect[i]) > 0 {
 				for _, ai := range answersIncorrect[i] {
 					if ai == chr {
-						score = 0
-						break character
+						rankedWords = append(rankedWords, Pair{word, 0})
+						continue word
 					}
 				}
 			}
 
 			if _, ok := checkedChars[chr]; !ok {
-				score += histogram[chr]
+				scoreToAdd := histogram[chr]
+				// Increase score for incorrectly placed letters
+				for _, aiChr := range answersIncorrectAll {
+					if chr == aiChr {
+						scoreToAdd *= 2
+						break
+					}
+				}
+				score += scoreToAdd
 				checkedChars[chr] = true
 			}
 		}
