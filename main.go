@@ -75,12 +75,14 @@ func main() {
 		input, _ := reader.ReadString('\n')
 		parts := strings.Split(strings.TrimSpace((input)), "")
 		boardRow := ""
+		numCorrect := 0
 		for i, chr := range parts {
 			if chr == "x" {
 				letters[wordParts[i]] = false
 			} else if chr == "y" {
 				boardRow += COLOUR_GREEN
 				answersCorrect[i] = wordParts[i]
+				numCorrect++
 			} else if chr == "o" {
 				boardRow += COLOUR_YELLOW
 				answersIncorrect[i] = append(answersIncorrect[i], wordParts[i])
@@ -92,7 +94,10 @@ func main() {
 
 		outputBoard()
 
-		// TODO exit if correct
+		if numCorrect == NUM_LETTERS {
+			fmt.Println("Hooray!")
+			return
+		}
 	}
 }
 
