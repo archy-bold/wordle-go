@@ -9,7 +9,14 @@ import (
 	"strings"
 )
 
-const NUM_LETTERS = 5
+const (
+	NUM_LETTERS  = 5
+	NUM_ATTEMPTS = 6
+
+	COLOUR_RESET  = "\033[0m"
+	COLOUR_GREEN  = "\033[32m"
+	COLOUR_YELLOW = "\033[33m"
+)
 
 var letters = map[string]bool{"a": true, "b": true, "c": true, "d": true, "e": true, "f": true, "g": true, "h": true, "i": true, "j": true, "k": true, "l": true, "m": true, "n": true, "o": true, "p": true, "q": true, "r": true, "s": true, "t": true, "u": true, "v": true, "w": true, "x": true, "y": true, "z": true}
 var validWords = []string{}
@@ -18,6 +25,7 @@ var histogram = map[string]int{}
 var rankedWords PairList
 var answersCorrect []string
 var answersIncorrect [][]string
+var board []string
 
 func main() {
 	// Read the valid words
@@ -64,15 +72,22 @@ func main() {
 		fmt.Print("Enter the result, where x is incorrect, o is wrong position, y is correct eg yxxox: ")
 		input, _ := reader.ReadString('\n')
 		parts := strings.Split(strings.TrimSpace((input)), "")
+		boardRow := ""
 		for i, chr := range parts {
 			if chr == "x" {
 				letters[wordParts[i]] = false
 			} else if chr == "y" {
+				boardRow += COLOUR_GREEN
 				answersCorrect[i] = wordParts[i]
 			} else if chr == "o" {
+				boardRow += COLOUR_YELLOW
 				answersIncorrect[i] = append(answersIncorrect[i], wordParts[i])
 			}
+			boardRow += wordParts[i] + COLOUR_RESET
 		}
+		board = append(board, boardRow)
+
+		outputBoard()
 	}
 }
 
@@ -170,4 +185,14 @@ func rankWords() {
 
 	// Sort the
 	sort.Sort(sort.Reverse(rankedWords))
+}
+
+func outputBoard() {
+	fmt.Println("")
+	fmt.Println(strings.Repeat("-", NUM_LETTERS+2))
+	for _, row := range board {
+		fmt.Printf("|%s|\n", row)
+	}
+	fmt.Println(strings.Repeat("-", NUM_LETTERS+2))
+	fmt.Println("")
 }
