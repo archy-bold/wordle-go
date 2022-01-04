@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"sort"
+	"strconv"
 	"strings"
 )
 
@@ -15,7 +16,8 @@ var validWords = []string{}
 var dictionary = map[string]int{}
 var histogram = map[string]int{}
 var rankedWords PairList
-var answers []string
+var answersCorrect []string
+var answersIncorrect [][]string
 
 func main() {
 	// Read the valid words
@@ -23,7 +25,8 @@ func main() {
 	err := readValidWords()
 	check(err)
 
-	answers = make([]string, NUM_LETTERS)
+	answersCorrect = make([]string, NUM_LETTERS)
+	answersIncorrect = make([][]string, NUM_LETTERS)
 
 	reader := bufio.NewReader(os.Stdin)
 	for {
@@ -37,30 +40,37 @@ func main() {
 
 		// Print the top 10 answers
 		fmt.Println("Top answers:")
-		for i := 0; i < 10; i++ {
-			rank := rankedWords[i]
-			fmt.Printf("  %s: %d\n", rank.Key, rank.Value)
+		ln := 10
+		if len(rankedWords) < ln {
+			ln = len(rankedWords)
 		}
-
-		// Read from stdin letters to eliminate
-		fmt.Print("Enter letters to eliminate eg afb: ")
-		input, _ := reader.ReadString('\n')
-		parts := strings.Split(input, "")
-		for _, chr := range parts {
-			// Ignore anything not in the map
-			if _, ok := letters[chr]; ok {
-				letters[chr] = false
+		for i := 0; i < ln; i++ {
+			rank := rankedWords[i]
+			if rank.Key != "" {
+				fmt.Printf("  %d: %s (%d)\n", i+1, rank.Key, rank.Value)
 			}
 		}
 
-		// Read from stdin correct letters
-		fmt.Print("Enter correctly positioned letters eg --a-b: ")
-		input, _ = reader.ReadString('\n')
-		parts = strings.Split(input, "")
+		// Read the entered word from stdin
+		// TODO handle errors such as wrong sized word, wrong pattern for response
+		fmt.Print("Enter number of entered word, or word itself: ")
+		word, _ := reader.ReadString('\n')
+		word = strings.TrimSpace(word)
+		if idx, err := strconv.Atoi(word); err == nil && idx <= len(rankedWords) {
+			word = rankedWords[idx-1].Key
+		}
+		wordParts := strings.Split(word, "")
+
+		fmt.Print("Enter the result, where x is incorrect, o is wrong position, y is correct eg yxxox: ")
+		input, _ := reader.ReadString('\n')
+		parts := strings.Split(strings.TrimSpace((input)), "")
 		for i, chr := range parts {
-			// Ignore anything not in the map
-			if _, ok := letters[chr]; ok && i < NUM_LETTERS {
-				answers[i] = chr
+			if chr == "x" {
+				letters[wordParts[i]] = false
+			} else if chr == "y" {
+				answersCorrect[i] = wordParts[i]
+			} else if chr == "o" {
+				answersIncorrect[i] = append(answersIncorrect[i], wordParts[i])
 			}
 		}
 	}
@@ -130,11 +140,22 @@ func rankWords() {
 		// TODO score based on letter position too
 		checkedChars := map[string]bool{}
 		score := 0
+	character:
 		for i, chr := range chrs {
 			// If there is an answer in this position, we can disregard words that don't have that letter in that position
-			if answers[i] != "" && answers[i] != chr {
+			if answersCorrect[i] != "" && answersCorrect[i] != chr {
 				score = 0
 				break
+			}
+
+			// Also check if there's an incorrect answer in this position
+			if len(answersIncorrect[i]) > 0 {
+				for _, ai := range answersIncorrect[i] {
+					if ai == chr {
+						score = 0
+						break character
+					}
+				}
 			}
 
 			if _, ok := checkedChars[chr]; !ok {
