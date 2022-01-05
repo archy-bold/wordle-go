@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"flag"
 	"fmt"
 	"os"
 	"sort"
@@ -34,6 +35,35 @@ var answersIncorrectAll []string
 var board []string
 
 func main() {
+	wordPtr := flag.String("word", "tapir", "The game's answer")
+	playPtr := flag.Bool("play", false, "Whether to play the game")
+	flag.Parse()
+
+	reader := bufio.NewReader(os.Stdin)
+
+	if *playPtr {
+		g := CreateGame(*wordPtr, NUM_ATTEMPTS)
+
+		for {
+			fmt.Print("Enter your guess: ")
+			input, _ := reader.ReadString('\n')
+			word := strings.TrimSpace(input)
+
+			success, _ := g.Play(word)
+
+			fmt.Println(g.OutputForConsole())
+
+			if success {
+				score, of := g.GetScore()
+				fmt.Printf("Great work! %d/%d\n", score, of)
+				return
+			} else if g.HasEnded() {
+				fmt.Printf("Better luck next time! X/%d\n", NUM_ATTEMPTS)
+				return
+			}
+		}
+	}
+
 	// Read the valid words
 	fmt.Println("Reading words...")
 	err := readValidWords()
@@ -42,7 +72,6 @@ func main() {
 	answersCorrect = make([]string, NUM_LETTERS)
 	answersIncorrect = make([][]string, NUM_LETTERS)
 
-	reader := bufio.NewReader(os.Stdin)
 	for {
 		// Generate histogram
 		fmt.Println("Building histogram...")
