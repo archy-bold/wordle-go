@@ -76,9 +76,20 @@ func main() {
 		parts := strings.Split(strings.TrimSpace((input)), "")
 		boardRow := ""
 		numCorrect := 0
+		rejected := make([]bool, NUM_LETTERS)
 		for i, chr := range parts {
 			if chr == "x" {
-				letters[wordParts[i]] = false
+				// If this letter has shown up before but not rejected, don't eliminate
+				shouldEliminate := true
+				for j := 0; j < i; j++ {
+					if chr == parts[j] && !rejected[j] {
+						shouldEliminate = false
+					}
+				}
+				if shouldEliminate {
+					letters[wordParts[i]] = false
+				}
+				rejected[i] = true
 			} else if chr == "y" {
 				boardRow += COLOUR_GREEN
 				answersCorrect[i] = wordParts[i]
@@ -192,6 +203,12 @@ word:
 		}
 
 		for i, chr := range chrs {
+			// If this is an eliminated letter, score down
+			if !letters[chr] {
+				rankedWords = append(rankedWords, Pair{word, 0})
+				continue word
+			}
+
 			// If there is an answer in this position, we can disregard words that don't have that letter in that position
 			if answersCorrect[i] != "" && answersCorrect[i] != chr {
 				rankedWords = append(rankedWords, Pair{word, 0})
