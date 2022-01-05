@@ -28,14 +28,15 @@ func main() {
 	wordPtr := flag.String("word", "", "The game's answer")
 	playPtr := flag.Bool("play", false, "Whether to play the game")
 	autoPtr := flag.Bool("auto", false, "Play the game automatically")
+	allPtr := flag.Bool("all", false, "Play all permutations")
 	flag.Parse()
 
 	auto := *autoPtr
 
 	// Read the valid words
-	fmt.Println("Reading words...")
+	fmt.Print("Reading words... ")
 	err := readValidWords()
-	fmt.Printf("Found %d\n", len(validWords))
+	fmt.Printf("found %d\n", len(validWords))
 	check(err)
 
 	reader := bufio.NewReader(os.Stdin)
@@ -43,6 +44,40 @@ func main() {
 	var strat strategy.Strategy
 	if auto {
 		strat = strategy.NewCharFrequencyStrategy(NUM_LETTERS, letters, &validWords)
+	}
+
+	// Play out all permutations
+	if *allPtr {
+		sumTries := 0
+		numSuccesses := 0
+		for _, answer := range validWords {
+			strat = strategy.NewCharFrequencyStrategy(NUM_LETTERS, letters, &validWords)
+			g := game.CreateGame(answer, NUM_ATTEMPTS)
+
+			for {
+				word := strat.GetNextMove()
+				success, _ := g.Play(word)
+				strat.SetMoveOutcome(g.GetLastPlay())
+
+				if success {
+					score, of := g.GetScore()
+					fmt.Printf("%s in %d/%d\n", answer, score, of)
+					numSuccesses++
+					sumTries += score
+
+					break
+				} else if g.HasEnded() {
+					fmt.Printf("%s failed\n", answer)
+					break
+				}
+
+			}
+		}
+
+		fmt.Printf("Completed %d/%d\n", numSuccesses, len(validWords))
+		fmt.Printf("On average %f\n", float64(sumTries)/float64(numSuccesses))
+
+		return
 	}
 
 	if *playPtr {
