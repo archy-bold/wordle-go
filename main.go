@@ -20,6 +20,7 @@ const (
 )
 
 var letters = []string{"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"}
+var startDate = time.Date(2021, time.June, 19, 0, 0, 0, 0, time.UTC)
 var validWords = []string{}
 
 // var dictionary = map[string]int{}
@@ -28,6 +29,7 @@ func main() {
 	wordPtr := flag.String("word", "", "The game's answer")
 	cheatPtr := flag.Bool("cheat", false, "Whether to run the solver mode")
 	autoPtr := flag.Bool("auto", false, "Play the game automatically")
+	randomPtr := flag.Bool("random", false, "Choose a random word, if none specified. Otherwise gets daily word")
 	starterPtr := flag.String("starter", "", "The starter word to use in strategies")
 	allPtr := flag.Bool("all", false, "Play all permutations")
 	flag.Parse()
@@ -145,8 +147,18 @@ func main() {
 	answer := *wordPtr
 
 	if answer == "" {
-		rand.Seed(time.Now().Unix())
-		answer = validWords[rand.Intn(len(validWords))]
+		var pos int
+		if *randomPtr {
+			rand.Seed(time.Now().Unix())
+			pos = rand.Intn(len(validWords))
+		} else {
+			// Go by date
+			today := time.Now().UTC()
+			year, month, day := today.Date()
+			today = time.Date(year, month, day, 0, 0, 0, 0, time.UTC)
+			pos = int(today.Sub(startDate).Hours() / 24)
+		}
+		answer = validWords[pos]
 	}
 	g := game.CreateGame(answer, NUM_ATTEMPTS)
 
