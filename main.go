@@ -167,14 +167,16 @@ func main() {
 			strat.SetMoveOutcome(g.GetLastPlay())
 		}
 
-		fmt.Println(g.OutputForConsole())
+		if strat == nil || success || g.HasEnded() {
+			fmt.Println(g.OutputForConsole())
+		}
 
 		if success {
 			score, of := g.GetScore()
 			fmt.Printf("Great work! %d/%d\n", score, of)
 			return
 		} else if g.HasEnded() {
-			fmt.Printf("Better luck next time! X/%d\n", NUM_ATTEMPTS)
+			fmt.Printf("Better luck next time! The word was '%s'. X/%d\n", answer, NUM_ATTEMPTS)
 			return
 		}
 	}
