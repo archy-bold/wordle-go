@@ -18,10 +18,15 @@ const (
 	COLOUR_YELLOW = "\033[33m"
 )
 
+type HistogramEntry struct {
+	Occurences            int
+	OccurrencesInPosition []int
+}
+
 var letters = map[string]bool{"a": true, "b": true, "c": true, "d": true, "e": true, "f": true, "g": true, "h": true, "i": true, "j": true, "k": true, "l": true, "m": true, "n": true, "o": true, "p": true, "q": true, "r": true, "s": true, "t": true, "u": true, "v": true, "w": true, "x": true, "y": true, "z": true}
 var validWords = []string{}
 var dictionary = map[string]int{}
-var histogram = map[string]int{}
+var histogram = map[string]HistogramEntry{}
 var rankedWords PairList
 var answersCorrect []string
 var answersIncorrect [][]string
@@ -157,9 +162,9 @@ func readValidWords() error {
 }
 
 func buildHistogram() {
-	histogram = make(map[string]int, len(letters))
+	histogram = make(map[string]HistogramEntry, len(letters))
 	for l := range letters {
-		histogram[l] = 0
+		histogram[l] = HistogramEntry{0, make([]int, NUM_LETTERS)}
 	}
 
 	// Loop through each word and check which unique letters are in the word
@@ -168,15 +173,19 @@ func buildHistogram() {
 
 		// Loop through each char and update the histogram
 		checkedChars := map[string]bool{}
-		for _, chr := range chrs {
+		for i, chr := range chrs {
 			// Ignore removed letters
 			if !letters[chr] {
 				continue
 			}
 			// If we've not already processed this letter
 			if _, ok := checkedChars[chr]; !ok {
-				histogram[chr]++
 				checkedChars[chr] = true
+				if entry, ok2 := histogram[chr]; ok2 {
+					entry.Occurences++
+					entry.OccurrencesInPosition[i]++
+					histogram[chr] = entry
+				}
 			}
 		}
 	}
@@ -226,7 +235,8 @@ word:
 			}
 
 			if _, ok := checkedChars[chr]; !ok {
-				scoreToAdd := histogram[chr]
+				// Score based on occurences and occurences in the position
+				scoreToAdd := histogram[chr].Occurences + histogram[chr].OccurrencesInPosition[i]
 				// Increase score for incorrectly placed letters
 				for _, aiChr := range answersIncorrectAll {
 					if chr == aiChr {
