@@ -30,6 +30,7 @@ func main() {
 	cheatPtr := flag.Bool("cheat", false, "Whether to run the solver mode")
 	autoPtr := flag.Bool("auto", false, "Play the game automatically")
 	randomPtr := flag.Bool("random", false, "Choose a random word, if none specified. Otherwise gets daily word")
+	datePtr := flag.String("date", "", "If specified, will choose the word for this day")
 	starterPtr := flag.String("starter", "", "The starter word to use in strategies")
 	allPtr := flag.Bool("all", false, "Play all permutations")
 	flag.Parse()
@@ -153,10 +154,17 @@ func main() {
 			pos = rand.Intn(len(validWords))
 		} else {
 			// Go by date
-			today := time.Now().UTC()
-			year, month, day := today.Date()
-			today = time.Date(year, month, day, 0, 0, 0, 0, time.UTC)
-			pos = int(today.Sub(startDate).Hours() / 24)
+			var dt time.Time
+			if *datePtr != "" {
+				dt, err = time.Parse("2006-01-02", *datePtr)
+				check(err)
+				// TODO check the date isn't before the start date or after the end date
+			} else {
+				dt = time.Now().UTC()
+				year, month, day := dt.Date()
+				dt = time.Date(year, month, day, 0, 0, 0, 0, time.UTC)
+			}
+			pos = int(dt.Sub(startDate).Hours() / 24)
 		}
 		answer = validWords[pos]
 	}
