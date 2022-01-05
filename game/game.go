@@ -35,6 +35,8 @@ type Game interface {
 	GetLastPlay() []GridCell
 	// OutputForConsole returns a string representation of the game for the command line
 	OutputForConsole() string
+	// OutputToShare returns a string representation of the game to share on social media
+	OutputToShare() string
 }
 
 type game struct {
@@ -85,6 +87,10 @@ func (g *game) GetLastPlay() []GridCell {
 
 func (g *game) OutputForConsole() string {
 	return outputGridForConsole(g.grid, len(g.answer))
+}
+
+func (g *game) OutputToShare() string {
+	return outputGridToShare(g.grid, g.attempts, len(g.grid))
 }
 
 // CreateGame creates a game for the given answer and number of allowed tries

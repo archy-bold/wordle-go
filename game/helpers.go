@@ -1,6 +1,9 @@
 package game
 
-import "strings"
+import (
+	"fmt"
+	"strings"
+)
 
 const (
 	NUM_LETTERS  = 5
@@ -31,6 +34,30 @@ func outputGridForConsole(grid [][]GridCell, length int) string {
 		str += "|\n"
 	}
 	str += strings.Repeat("-", length+2) + "\n"
+
+	return str
+}
+
+func outputGridToShare(grid [][]GridCell, score int, of int) string {
+	str := fmt.Sprintf("Wordle %d/%d\n\n", score, of)
+	for _, row := range grid {
+		if len(row) == 0 {
+			break
+		}
+
+		for _, cell := range row {
+			switch cell.Status {
+			case STATUS_CORRECT:
+				str += "🟩"
+			case STATUS_INCORRECT:
+				str += "🟨"
+			case STATUS_WRONG:
+				str += "⬜"
+			}
+		}
+		str += "\n"
+	}
+	str += "\n"
 
 	return str
 }

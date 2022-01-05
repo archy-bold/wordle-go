@@ -48,6 +48,10 @@ func (g *UnknownGame) OutputForConsole() string {
 	return outputGridForConsole(g.grid, g.length)
 }
 
+func (g *UnknownGame) OutputToShare() string {
+	return outputGridToShare(g.grid, g.attempts, len(g.grid))
+}
+
 // CreateGame creates a game for the given answer and number of allowed tries
 func CreateUnknownGame(length int, tries int) Game {
 	// TODO include valid entries

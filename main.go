@@ -173,9 +173,11 @@ func main() {
 
 		if success {
 			score, of := g.GetScore()
+			fmt.Println(g.OutputToShare())
 			fmt.Printf("Great work! %d/%d\n", score, of)
 			return
 		} else if g.HasEnded() {
+			fmt.Println(g.OutputToShare())
 			fmt.Printf("Better luck next time! The word was '%s'. X/%d\n", answer, NUM_ATTEMPTS)
 			return
 		}
