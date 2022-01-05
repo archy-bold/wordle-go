@@ -4,10 +4,12 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
+	"math/rand"
 	"os"
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 )
 
 const (
@@ -35,14 +37,26 @@ var answersIncorrectAll []string
 var board []string
 
 func main() {
-	wordPtr := flag.String("word", "tapir", "The game's answer")
+	wordPtr := flag.String("word", "", "The game's answer")
 	playPtr := flag.Bool("play", false, "Whether to play the game")
 	flag.Parse()
+
+	// Read the valid words
+	fmt.Println("Reading words...")
+	err := readValidWords()
+	fmt.Printf("Found %d\n", len(validWords))
+	check(err)
 
 	reader := bufio.NewReader(os.Stdin)
 
 	if *playPtr {
-		g := CreateGame(*wordPtr, NUM_ATTEMPTS)
+		// If no answer given in the word flag, choose
+		answer := *wordPtr
+		if answer == "" {
+			rand.Seed(time.Now().Unix())
+			answer = validWords[rand.Intn(len(validWords))]
+		}
+		g := CreateGame(answer, NUM_ATTEMPTS)
 
 		for {
 			fmt.Print("Enter your guess: ")
@@ -63,11 +77,6 @@ func main() {
 			}
 		}
 	}
-
-	// Read the valid words
-	fmt.Println("Reading words...")
-	err := readValidWords()
-	check(err)
 
 	answersCorrect = make([]string, NUM_LETTERS)
 	answersIncorrect = make([][]string, NUM_LETTERS)
