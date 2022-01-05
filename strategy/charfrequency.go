@@ -102,7 +102,7 @@ word:
 
 			if _, ok := checkedChars[chr]; !ok {
 				// Score based on occurences and occurences in the position
-				scoreToAdd := s.histogram[chr].Occurences + s.histogram[chr].OccurrencesInPosition[i]
+				scoreToAdd := s.histogram[chr].Occurences + (s.histogram[chr].OccurrencesInPosition[i] * 10)
 				// Increase score for incorrectly placed letters
 				for _, aiChr := range s.answersIncorrectAll {
 					if chr == aiChr {
