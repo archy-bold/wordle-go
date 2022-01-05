@@ -22,3 +22,4 @@ Run the command with no arguments to play a game with a random word.
 - `-auto` - Automatically completes the puzzle
 - `-word=[answer]` - Set the winning word with this argument.
 - `-all` - Runs the auto-solver through every permutation, giving results when complete.
+- `-starter=[word]` - Specify the starter word for strategies

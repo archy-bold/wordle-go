@@ -15,6 +15,8 @@ type HistogramEntry struct {
 
 // CharFrequencyStrategy a strategy that plays based on the frequency of characters in the solutions list
 type CharFrequencyStrategy struct {
+	attempts            int
+	starter             string
 	wordLength          int
 	letters             map[string]bool
 	validWords          *[]string
@@ -123,6 +125,9 @@ word:
 
 // GetNextMove simply returns the top-ranked word
 func (s *CharFrequencyStrategy) GetNextMove() string {
+	if s.attempts == 0 && s.starter != "" {
+		return s.starter
+	}
 	return s.rankedWords[0].Key
 }
 
@@ -153,6 +158,8 @@ func (s *CharFrequencyStrategy) SetMoveOutcome(row []game.GridCell) {
 		}
 	}
 
+	s.attempts++
+
 	// Rebuild the histogram and ranking
 	s.buildHistogram()
 	s.rankWords()
@@ -164,13 +171,14 @@ func (s *CharFrequencyStrategy) GetSuggestions(n int) PairList {
 }
 
 // NewCharFrequencyStrategy create a char frequency-based strategy given the word list and letters list
-func NewCharFrequencyStrategy(wordLength int, letters []string, validWords *[]string) Strategy {
+func NewCharFrequencyStrategy(wordLength int, letters []string, validWords *[]string, starter string) Strategy {
 	lettersMap := map[string]bool{}
 	for _, l := range letters {
 		lettersMap[l] = true
 	}
 
 	s := &CharFrequencyStrategy{
+		starter:          starter,
 		wordLength:       wordLength,
 		letters:          lettersMap,
 		validWords:       validWords,

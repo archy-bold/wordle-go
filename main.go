@@ -28,6 +28,7 @@ func main() {
 	wordPtr := flag.String("word", "", "The game's answer")
 	cheatPtr := flag.Bool("cheat", false, "Whether to run the solver mode")
 	autoPtr := flag.Bool("auto", false, "Play the game automatically")
+	starterPtr := flag.String("starter", "", "The starter word to use in strategies")
 	allPtr := flag.Bool("all", false, "Play all permutations")
 	flag.Parse()
 
@@ -43,7 +44,7 @@ func main() {
 
 	var strat strategy.Strategy
 	if auto {
-		strat = strategy.NewCharFrequencyStrategy(NUM_LETTERS, letters, &validWords)
+		strat = strategy.NewCharFrequencyStrategy(NUM_LETTERS, letters, &validWords, *starterPtr)
 	}
 
 	// Play out all permutations
@@ -51,7 +52,7 @@ func main() {
 		sumTries := 0
 		numSuccesses := 0
 		for _, answer := range validWords {
-			strat = strategy.NewCharFrequencyStrategy(NUM_LETTERS, letters, &validWords)
+			strat = strategy.NewCharFrequencyStrategy(NUM_LETTERS, letters, &validWords, *starterPtr)
 			g := game.CreateGame(answer, NUM_ATTEMPTS)
 
 			for {
@@ -82,7 +83,7 @@ func main() {
 
 	// Cheat mode
 	if *cheatPtr {
-		strat = strategy.NewCharFrequencyStrategy(NUM_LETTERS, letters, &validWords)
+		strat = strategy.NewCharFrequencyStrategy(NUM_LETTERS, letters, &validWords, *starterPtr)
 		ug := game.CreateUnknownGame(NUM_LETTERS, NUM_ATTEMPTS)
 		for {
 
