@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -20,8 +21,8 @@ const (
 
 var letters = []string{"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"}
 var validWords = []string{}
-var dictionary = map[string]int{}
-var board []string
+
+// var dictionary = map[string]int{}
 
 func main() {
 	wordPtr := flag.String("word", "", "The game's answer")
@@ -84,70 +85,62 @@ func main() {
 		}
 	}
 
+	// Cheat mode
+	strat = strategy.NewCharFrequencyStrategy(NUM_LETTERS, letters, &validWords)
+	ug := game.CreateUnknownGame(NUM_LETTERS, NUM_ATTEMPTS)
 	for {
 
-		// // Print the top 10 answers
-		// fmt.Println("Top answers:")
-		// ln := 10
-		// if len(rankedWords) < ln {
-		// 	ln = len(rankedWords)
-		// }
-		// for i := 0; i < ln; i++ {
-		// 	rank := rankedWords[i]
-		// 	if rank.Key != "" {
-		// 		fmt.Printf("  %d: %s (%d)\n", i+1, rank.Key, rank.Value)
-		// 	}
-		// }
-		//
-		// // Read the entered word from stdin
-		// answersIncorrectAll = make([]string, 0)
-		// // TODO handle errors such as wrong sized word, wrong pattern for response
-		// fmt.Print("Enter number of entered word, or word itself: ")
-		// word, _ := reader.ReadString('\n')
-		// word = strings.TrimSpace(word)
-		// if idx, err := strconv.Atoi(word); err == nil && idx <= len(rankedWords) {
-		// 	word = rankedWords[idx-1].Key
-		// }
-		// wordParts := strings.Split(word, "")
-		//
-		// fmt.Print("Enter the result, where x is incorrect, o is wrong position, y is correct eg yxxox: ")
-		// input, _ := reader.ReadString('\n')
-		// parts := strings.Split(strings.TrimSpace((input)), "")
-		// boardRow := ""
-		// numCorrect := 0
-		// rejected := make([]bool, NUM_LETTERS)
-		// for i, chr := range parts {
-		// 	if chr == "x" {
-		// 		// If this letter has shown up before but not rejected, don't eliminate
-		// 		shouldEliminate := true
-		// 		for j := 0; j < i; j++ {
-		// 			if chr == parts[j] && !rejected[j] {
-		// 				shouldEliminate = false
-		// 			}
-		// 		}
-		// 		if shouldEliminate {
-		// 			letters[wordParts[i]] = false
-		// 		}
-		// 		rejected[i] = true
-		// 	} else if chr == "y" {
-		// 		boardRow += COLOUR_GREEN
-		// 		answersCorrect[i] = wordParts[i]
-		// 		numCorrect++
-		// 	} else if chr == "o" {
-		// 		boardRow += COLOUR_YELLOW
-		// 		answersIncorrect[i] = append(answersIncorrect[i], wordParts[i])
-		// 		answersIncorrectAll = append(answersIncorrectAll, wordParts[i])
-		// 	}
-		// 	boardRow += wordParts[i] + COLOUR_RESET
-		// }
-		// board = append(board, boardRow)
-		//
-		// outputBoard()
-		//
-		// if numCorrect == NUM_LETTERS {
-		// 	fmt.Printf("Hooray! (%d/%d)\n", len(board), NUM_ATTEMPTS)
-		// 	return
-		// }
+		// Print the top 10 answers
+		fmt.Println("Top answers:")
+		suggestions := strat.GetSuggestions(10)
+		for i, suggestion := range suggestions {
+			if suggestion.Key != "" {
+				fmt.Printf("  %d: %s (%d)\n", i+1, suggestion.Key, suggestion.Value)
+			}
+		}
+
+		// Read the entered word from stdin
+		// TODO handle errors such as wrong sized word, wrong pattern for response
+		fmt.Print("Enter number of entered word, or word itself: ")
+		word, _ := reader.ReadString('\n')
+		word = strings.TrimSpace(word)
+		if idx, err := strconv.Atoi(word); err == nil && idx <= len(suggestions) {
+			word = suggestions[idx-1].Key
+		}
+		wordParts := strings.Split(word, "")
+
+		fmt.Print("Enter the result, where x is incorrect, o is wrong position, y is correct eg yxxox: ")
+		input, _ := reader.ReadString('\n')
+		parts := strings.Split(strings.TrimSpace((input)), "")
+		row := make([]game.GridCell, NUM_LETTERS)
+		for i, chr := range parts {
+			if chr == "x" {
+				row[i] = game.GridCell{
+					Letter: wordParts[i],
+					Status: game.STATUS_WRONG,
+				}
+			} else if chr == "y" {
+				row[i] = game.GridCell{
+					Letter: wordParts[i],
+					Status: game.STATUS_CORRECT,
+				}
+			} else if chr == "o" {
+				row[i] = game.GridCell{
+					Letter: wordParts[i],
+					Status: game.STATUS_INCORRECT,
+				}
+			}
+		}
+
+		// Update the game grid and strategy
+		strat.SetMoveOutcome(row)
+		complete, _ := ug.(*game.UnknownGame).AddResult(row)
+
+		if complete {
+			score, _ := ug.GetScore()
+			fmt.Printf("Hooray! (%d/%d)\n", score, NUM_ATTEMPTS)
+			return
+		}
 	}
 }
 
@@ -168,7 +161,7 @@ func readValidWords() error {
 	i := 0
 	for scanner.Scan() {
 		word := scanner.Text()
-		dictionary[word] = i
+		// dictionary[word] = i
 		validWords = append(validWords, word)
 		i++
 	}
@@ -178,14 +171,4 @@ func readValidWords() error {
 	}
 
 	return nil
-}
-
-func outputBoard() {
-	fmt.Println("")
-	fmt.Println(strings.Repeat("-", NUM_LETTERS+2))
-	for _, row := range board {
-		fmt.Printf("|%s|\n", row)
-	}
-	fmt.Println(strings.Repeat("-", NUM_LETTERS+2))
-	fmt.Println("")
 }

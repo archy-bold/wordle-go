@@ -158,6 +158,11 @@ func (s *CharFrequencyStrategy) SetMoveOutcome(row []game.GridCell) {
 	s.rankWords()
 }
 
+// GetSuggestions will get the best n suggestions given the current state
+func (s *CharFrequencyStrategy) GetSuggestions(n int) PairList {
+	return s.rankedWords[0:n]
+}
+
 // NewCharFrequencyStrategy create a char frequency-based strategy given the word list and letters list
 func NewCharFrequencyStrategy(wordLength int, letters []string, validWords *[]string) Strategy {
 	lettersMap := map[string]bool{}

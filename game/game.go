@@ -51,12 +51,10 @@ func (g *game) Play(word string) (bool, error) {
 	parts := strings.Split(word, "")
 	answerParts := strings.Split(g.answer, "")
 	row := make([]GridCell, len(parts))
-	numCorrect := 0
 	for i, chr := range parts {
 		var status CellStatus
 		if chr == answerParts[i] {
 			status = STATUS_CORRECT
-			numCorrect++
 		} else if stringInSlice(chr, answerParts) {
 			status = STATUS_INCORRECT
 		} else {
@@ -86,27 +84,7 @@ func (g *game) GetLastPlay() []GridCell {
 }
 
 func (g *game) OutputForConsole() string {
-	str := "\n" + strings.Repeat("-", len(g.answer)+2) + "\n"
-	for _, row := range g.grid {
-		if len(row) == 0 {
-			break
-		}
-
-		str += "|"
-		for _, cell := range row {
-			switch cell.Status {
-			case STATUS_CORRECT:
-				str += COLOUR_GREEN
-			case STATUS_INCORRECT:
-				str += COLOUR_YELLOW
-			}
-			str += cell.Letter + COLOUR_RESET
-		}
-		str += "|\n"
-	}
-	str += strings.Repeat("-", len(g.answer)+2) + "\n"
-
-	return str
+	return outputGridForConsole(g.grid, len(g.answer))
 }
 
 // CreateGame creates a game for the given answer and number of allowed tries
