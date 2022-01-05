@@ -1,9 +1,10 @@
-package main
+package game
 
 import (
 	"strings"
 )
 
+// CellStatus represents whether a cell is in a state of empty, correct, incorrect or wrong
 type CellStatus int
 
 const (
@@ -13,17 +14,26 @@ const (
 	STATUS_WRONG     CellStatus = 3
 )
 
+// GridCell represents a cell within a game grid
 type GridCell struct {
 	Letter string
 	Status CellStatus
 }
 
-type Grid = [][]GridCell
+// Grid represents a game grid
+type Grid [][]GridCell
 
+// Game represents a game that can be played
 type Game interface {
+	// Play plays a word in the game
 	Play(word string) (bool, error)
+	// HasEnded returns whether the game has ended, whether with success or failure
 	HasEnded() bool
+	// GetScore gets the running or final score for the game
 	GetScore() (int, int)
+	// GetLastPlay returns the result of the last play
+	GetLastPlay() []GridCell
+	// OutputForConsole returns a string representation of the game for the command line
 	OutputForConsole() string
 }
 
@@ -71,6 +81,10 @@ func (g *game) GetScore() (int, int) {
 	return g.attempts, len(g.grid)
 }
 
+func (g *game) GetLastPlay() []GridCell {
+	return g.grid[g.attempts-1]
+}
+
 func (g *game) OutputForConsole() string {
 	str := "\n" + strings.Repeat("-", len(g.answer)+2) + "\n"
 	for _, row := range g.grid {
@@ -95,8 +109,9 @@ func (g *game) OutputForConsole() string {
 	return str
 }
 
-// TODO include valid entries
+// CreateGame creates a game for the given answer and number of allowed tries
 func CreateGame(answer string, tries int) Game {
+	// TODO include valid entries
 	grid := make([][]GridCell, tries)
 
 	return &game{false, 0, answer, grid}

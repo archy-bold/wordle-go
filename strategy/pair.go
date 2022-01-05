@@ -1,4 +1,4 @@
-package main
+package strategy
 
 type Pair struct {
 	Key   string
