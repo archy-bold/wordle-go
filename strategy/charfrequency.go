@@ -179,6 +179,9 @@ func (s *CharFrequencyStrategy) SetMoveOutcome(row []game.GridCell) {
 
 // GetSuggestions will get the best n suggestions given the current state
 func (s *CharFrequencyStrategy) GetSuggestions(n int) PairList {
+	if n >= len(s.rankedWords) {
+		n = len(s.rankedWords) - 1
+	}
 	return s.rankedWords[0:n]
 }
 
