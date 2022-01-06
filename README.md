@@ -2,6 +2,16 @@
 
 A Wordle implementation for the command line, written in go.
 
+## Get It
+
+I'm looking into releasing a version of this somehow, but for now you'll just need to clone the repo and run the command from the directory. It's precompiled, so should just run straight away. But if not, compile for your system with the build command below.
+
+```bash
+git clone git@github.com:archy-bold/wordle-go.git
+cd wordle-go
+./wordle
+```
+
 ## Build
 
 ```bash
