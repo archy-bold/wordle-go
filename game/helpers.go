@@ -38,8 +38,9 @@ func outputGridForConsole(grid [][]GridCell, length int) string {
 	return str
 }
 
-func outputGridToShare(grid [][]GridCell, score int, of int) string {
-	str := fmt.Sprintf("Wordle %d/%d\n\n", score, of)
+func outputGridToShare(grid [][]GridCell, score string, of int) string {
+	// TODO output game number here
+	str := fmt.Sprintf("Wordle %s/%d\n\n", score, of)
 	for _, row := range grid {
 		if len(row) == 0 {
 			break

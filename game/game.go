@@ -1,6 +1,7 @@
 package game
 
 import (
+	"fmt"
 	"strings"
 )
 
@@ -70,7 +71,12 @@ func (g *game) Play(word string) (bool, error) {
 	g.grid[g.attempts] = row
 	g.attempts++
 
-	return word == g.answer, nil
+	if word == g.answer {
+		g.complete = true
+		return true, nil
+	}
+
+	return false, nil
 }
 
 func (g *game) HasEnded() bool {
@@ -82,6 +88,9 @@ func (g *game) GetScore() (int, int) {
 }
 
 func (g *game) GetLastPlay() []GridCell {
+	if g.attempts == 0 {
+		return nil
+	}
 	return g.grid[g.attempts-1]
 }
 
@@ -90,13 +99,17 @@ func (g *game) OutputForConsole() string {
 }
 
 func (g *game) OutputToShare() string {
-	return outputGridToShare(g.grid, g.attempts, len(g.grid))
+	score := fmt.Sprint(g.attempts)
+	if !g.complete && g.HasEnded() {
+		score = "X"
+	}
+	return outputGridToShare(g.grid, score, len(g.grid))
 }
 
 // CreateGame creates a game for the given answer and number of allowed tries
 func CreateGame(answer string, tries int) Game {
 	// TODO include valid entries
-	grid := make([][]GridCell, tries)
+	grid := make(Grid, tries)
 
 	return &game{false, 0, answer, grid}
 }

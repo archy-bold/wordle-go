@@ -1,5 +1,7 @@
 package game
 
+import "fmt"
+
 type UnknownGame struct {
 	complete bool
 	attempts int
@@ -49,7 +51,11 @@ func (g *UnknownGame) OutputForConsole() string {
 }
 
 func (g *UnknownGame) OutputToShare() string {
-	return outputGridToShare(g.grid, g.attempts, len(g.grid))
+	score := fmt.Sprint(g.attempts)
+	if !g.complete && g.HasEnded() {
+		score = "X"
+	}
+	return outputGridToShare(g.grid, score, len(g.grid))
 }
 
 // CreateGame creates a game for the given answer and number of allowed tries
