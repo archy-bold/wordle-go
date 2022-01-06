@@ -7,7 +7,9 @@ import (
 )
 
 var (
-	gameTapirStart    = &game{false, 0, "tapir", make(Grid, 6)}
+	validWords        = []string{"group", "prank", "spare", "tapir"}
+	validWords2       = []string{"at", "ta"}
+	gameTapirStart    = &game{false, 0, "tapir", make(Grid, 6), &validWords}
 	gameTapirFinished = &game{true, 4, "tapir", Grid{
 		{GridCell{"g", STATUS_WRONG}, GridCell{"r", STATUS_INCORRECT}, GridCell{"o", STATUS_WRONG}, GridCell{"u", STATUS_WRONG}, GridCell{"p", STATUS_INCORRECT}},
 		{GridCell{"p", STATUS_INCORRECT}, GridCell{"r", STATUS_INCORRECT}, GridCell{"a", STATUS_INCORRECT}, GridCell{"n", STATUS_WRONG}, GridCell{"k", STATUS_WRONG}},
@@ -15,26 +17,27 @@ var (
 		{GridCell{"t", STATUS_CORRECT}, GridCell{"a", STATUS_CORRECT}, GridCell{"p", STATUS_CORRECT}, GridCell{"i", STATUS_CORRECT}, GridCell{"r", STATUS_CORRECT}},
 		nil,
 		nil,
-	}}
-	gameAtStart    = &game{false, 0, "at", make(Grid, 1)}
+	}, &validWords}
+	gameAtStart    = &game{false, 0, "at", make(Grid, 1), &validWords2}
 	gameAtFinished = &game{false, 1, "at", Grid{
 		{GridCell{"t", STATUS_INCORRECT}, GridCell{"a", STATUS_INCORRECT}},
-	}}
+	}, &validWords2}
 )
 
 var createGameTests = map[string]struct {
-	answer   string
-	tries    int
-	expected *game
+	answer     string
+	tries      int
+	validWords *[]string
+	expected   *game
 }{
-	"5 letter, 6 tries":   {"tapir", 6, &game{false, 0, "tapir", Grid{nil, nil, nil, nil, nil, nil}}},
-	"3 letter, 3 tries":   {"bat", 3, &game{false, 0, "bat", Grid{nil, nil, nil}}},
-	"5 letter, uppercase": {"TAPIR", 6, &game{false, 0, "tapir", Grid{nil, nil, nil, nil, nil, nil}}},
+	"5 letter, 6 tries":   {"tapir", 6, &validWords, &game{false, 0, "tapir", Grid{nil, nil, nil, nil, nil, nil}, &validWords}},
+	"3 letter, 3 tries":   {"bat", 3, &validWords2, &game{false, 0, "bat", Grid{nil, nil, nil}, &validWords2}},
+	"5 letter, uppercase": {"TAPIR", 6, &validWords, &game{false, 0, "tapir", Grid{nil, nil, nil, nil, nil, nil}, &validWords}},
 }
 
 func Test_CreateGame(t *testing.T) {
 	for tn, tt := range createGameTests {
-		g := CreateGame(tt.answer, tt.tries)
+		g := CreateGame(tt.answer, tt.tries, tt.validWords)
 
 		assert.Equalf(t, tt.expected, g, "Expected game to match for test '%s'", tn)
 	}
@@ -69,6 +72,11 @@ var gamePlayTests = map[string]struct {
 		tries:       []string{"strong"},
 		expectedErr: "The entered word length is wrong, should be: 5",
 	},
+	"5-letter, try invalid word": {
+		g:           gameTapirStart,
+		tries:       []string{"scrap"},
+		expectedErr: ErrInvalidWord.Error(),
+	},
 	"2-letter, lost": {
 		g:            gameAtStart,
 		tries:        []string{"ta"},
@@ -80,7 +88,7 @@ var gamePlayTests = map[string]struct {
 func Test_game_Play(t *testing.T) {
 	for tn, tt := range gamePlayTests {
 		// Copy first
-		g := &game{tt.g.complete, tt.g.attempts, tt.g.answer, make(Grid, len(tt.g.grid))}
+		g := &game{tt.g.complete, tt.g.attempts, tt.g.answer, make(Grid, len(tt.g.grid)), tt.g.validWords}
 		for i, row := range tt.g.grid {
 			copy(g.grid[i], row)
 		}

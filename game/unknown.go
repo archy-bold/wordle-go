@@ -71,7 +71,6 @@ func (g *UnknownGame) OutputToShare() string {
 
 // CreateGame creates a game for the given answer and number of allowed tries
 func CreateUnknownGame(length int, tries int) Game {
-	// TODO include valid entries
 	grid := make(Grid, tries)
 
 	return &UnknownGame{false, 0, length, grid}

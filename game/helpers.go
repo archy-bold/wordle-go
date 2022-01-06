@@ -2,6 +2,7 @@ package game
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 )
 
@@ -70,4 +71,10 @@ func stringInSlice(a string, list []string) bool {
 		}
 	}
 	return false
+}
+
+func stringInSortedSlice(a string, list *[]string) bool {
+	i := sort.SearchStrings(*list, a)
+	return i < len(*list) && (*list)[i] == a
+
 }

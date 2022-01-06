@@ -43,20 +43,27 @@ type Game interface {
 }
 
 type game struct {
-	complete bool
-	attempts int
-	answer   string
-	grid     Grid
+	complete   bool
+	attempts   int
+	answer     string
+	grid       Grid
+	validWords *[]string
 }
 
 func (g *game) Play(word string) (bool, error) {
+	word = strings.ToLower(word)
+
 	// Check the word length here and error if too long/short
 	if len(word) != len(g.answer) {
 		return false, errors.Wrap(ErrWrongWordLength, fmt.Sprint(len(word)))
 	}
 
+	// Also test against the valid words list
+	if !stringInSortedSlice(word, g.validWords) {
+		return false, ErrInvalidWord
+	}
+
 	// Create the row for the grid
-	word = strings.ToLower(word)
 	parts := strings.Split(word, "")
 	answerParts := strings.Split(g.answer, "")
 	row := make([]GridCell, len(parts))
@@ -113,9 +120,8 @@ func (g *game) OutputToShare() string {
 }
 
 // CreateGame creates a game for the given answer and number of allowed tries
-func CreateGame(answer string, tries int) Game {
-	// TODO include valid entries
+func CreateGame(answer string, tries int, validWords *[]string) Game {
 	grid := make(Grid, tries)
 
-	return &game{false, 0, strings.ToLower(answer), grid}
+	return &game{false, 0, strings.ToLower(answer), grid, validWords}
 }

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -22,6 +23,7 @@ const (
 var letters = []string{"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"}
 var startDate = time.Date(2021, time.June, 19, 0, 0, 0, 0, time.UTC)
 var validWords = []string{}
+var allAcceptedWords = []string{}
 
 // var dictionary = map[string]int{}
 
@@ -38,9 +40,18 @@ func main() {
 	auto := *autoPtr
 
 	// Read the valid words
-	fmt.Print("Reading words... ")
-	err := readValidWords()
+	var err error
+	fmt.Print("Reading solutions... ")
+	err = readWordList(&validWords, "./words/5/solutions.txt")
 	fmt.Printf("found %d\n", len(validWords))
+	check(err)
+
+	// Read the valid guesses
+	fmt.Print("Reading valid guesses... ")
+	err = readWordList(&allAcceptedWords, "./words/5/guesses.txt")
+	// Sort the valid guesses as we will be searching that array often
+	sort.Strings(allAcceptedWords)
+	fmt.Printf("found %d\n", len(allAcceptedWords))
 	check(err)
 
 	reader := bufio.NewReader(os.Stdin)
@@ -56,7 +67,7 @@ func main() {
 		numSuccesses := 0
 		for _, answer := range validWords {
 			strat = strategy.NewCharFrequencyStrategy(NUM_LETTERS, letters, &validWords, *starterPtr)
-			g := game.CreateGame(answer, NUM_ATTEMPTS)
+			g := game.CreateGame(answer, NUM_ATTEMPTS, &allAcceptedWords)
 
 			for {
 				word := strat.GetNextMove()
@@ -168,7 +179,7 @@ func main() {
 		}
 		answer = validWords[pos]
 	}
-	g := game.CreateGame(answer, NUM_ATTEMPTS)
+	g := game.CreateGame(answer, NUM_ATTEMPTS, &allAcceptedWords)
 
 	for {
 		// Play based on whether a strategy is provided
@@ -210,8 +221,8 @@ func check(e error) {
 	}
 }
 
-func readValidWords() error {
-	file, err := os.Open("./solutions.txt")
+func readWordList(arr *[]string, fname string) error {
+	file, err := os.Open(fname)
 	if err != nil {
 		return err
 	}
@@ -222,7 +233,7 @@ func readValidWords() error {
 	for scanner.Scan() {
 		word := scanner.Text()
 		// dictionary[word] = i
-		validWords = append(validWords, word)
+		*arr = append(*arr, word)
 		i++
 	}
 
