@@ -42,13 +42,13 @@ func main() {
 	// Read the valid words
 	var err error
 	fmt.Print("Reading solutions... ")
-	err = readWordList(&validWords, "./words/5/solutions.txt")
+	err = readWordList(&validWords, "words/5/solutions.txt")
 	fmt.Printf("found %d\n", len(validWords))
 	check(err)
 
 	// Read the valid guesses
 	fmt.Print("Reading valid guesses... ")
-	err = readWordList(&allAcceptedWords, "./words/5/guesses.txt")
+	err = readWordList(&allAcceptedWords, "words/5/guesses.txt")
 	// Sort the valid guesses as we will be searching that array often
 	sort.Strings(allAcceptedWords)
 	fmt.Printf("found %d\n", len(allAcceptedWords))
@@ -223,13 +223,12 @@ func check(e error) {
 }
 
 func readWordList(arr *[]string, fname string) error {
-	file, err := os.Open(fname)
+	data, err := Asset(fname)
 	if err != nil {
 		return err
 	}
-	defer file.Close()
 
-	scanner := bufio.NewScanner(file)
+	scanner := bufio.NewScanner(strings.NewReader(string(data)))
 	i := 0
 	for scanner.Scan() {
 		word := scanner.Text()
