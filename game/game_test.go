@@ -10,7 +10,7 @@ var (
 	kb                = newKeyboard()
 	validWords        = []string{"group", "prank", "spare", "tapir"}
 	validWords2       = []string{"at", "ta"}
-	gameTapirStart    = &game{false, 0, "tapir", make(Grid, 6), &validWords, kb}
+	gameTapirStart    = &game{false, 0, "tapir", make(Grid, 6), &validWords, kb, 200}
 	gameTapirFinished = &game{true, 4, "tapir", Grid{
 		{GridCell{"g", STATUS_WRONG}, GridCell{"r", STATUS_INCORRECT}, GridCell{"o", STATUS_WRONG}, GridCell{"u", STATUS_WRONG}, GridCell{"p", STATUS_INCORRECT}},
 		{GridCell{"p", STATUS_INCORRECT}, GridCell{"r", STATUS_INCORRECT}, GridCell{"a", STATUS_INCORRECT}, GridCell{"n", STATUS_WRONG}, GridCell{"k", STATUS_WRONG}},
@@ -18,27 +18,28 @@ var (
 		{GridCell{"t", STATUS_CORRECT}, GridCell{"a", STATUS_CORRECT}, GridCell{"p", STATUS_CORRECT}, GridCell{"i", STATUS_CORRECT}, GridCell{"r", STATUS_CORRECT}},
 		nil,
 		nil,
-	}, &validWords, kb}
-	gameAtStart    = &game{false, 0, "at", make(Grid, 1), &validWords2, kb}
+	}, &validWords, kb, 200}
+	gameAtStart    = &game{false, 0, "at", make(Grid, 1), &validWords2, kb, 200}
 	gameAtFinished = &game{false, 1, "at", Grid{
 		{GridCell{"t", STATUS_INCORRECT}, GridCell{"a", STATUS_INCORRECT}},
-	}, &validWords2, kb}
+	}, &validWords2, kb, 200}
 )
 
 var createGameTests = map[string]struct {
 	answer     string
 	tries      int
 	validWords *[]string
+	gameNum    int
 	expected   *game
 }{
-	"5 letter, 6 tries":   {"tapir", 6, &validWords, &game{false, 0, "tapir", Grid{nil, nil, nil, nil, nil, nil}, &validWords, kb}},
-	"3 letter, 3 tries":   {"bat", 3, &validWords2, &game{false, 0, "bat", Grid{nil, nil, nil}, &validWords2, kb}},
-	"5 letter, uppercase": {"TAPIR", 6, &validWords, &game{false, 0, "tapir", Grid{nil, nil, nil, nil, nil, nil}, &validWords, kb}},
+	"5 letter, 6 tries":   {"tapir", 6, &validWords, 200, &game{false, 0, "tapir", Grid{nil, nil, nil, nil, nil, nil}, &validWords, kb, 200}},
+	"3 letter, 3 tries":   {"bat", 3, &validWords2, 199, &game{false, 0, "bat", Grid{nil, nil, nil}, &validWords2, kb, 199}},
+	"5 letter, uppercase": {"TAPIR", 6, &validWords, 200, &game{false, 0, "tapir", Grid{nil, nil, nil, nil, nil, nil}, &validWords, kb, 200}},
 }
 
 func Test_CreateGame(t *testing.T) {
 	for tn, tt := range createGameTests {
-		g := CreateGame(tt.answer, tt.tries, tt.validWords)
+		g := CreateGame(tt.answer, tt.tries, tt.validWords, tt.gameNum)
 
 		assert.Equalf(t, tt.expected, g, "Expected game to match for test '%s'", tn)
 	}
@@ -89,7 +90,7 @@ var gamePlayTests = map[string]struct {
 func Test_game_Play(t *testing.T) {
 	for tn, tt := range gamePlayTests {
 		// Copy first
-		g := &game{tt.g.complete, tt.g.attempts, tt.g.answer, make(Grid, len(tt.g.grid)), tt.g.validWords, newKeyboard()}
+		g := &game{tt.g.complete, tt.g.attempts, tt.g.answer, make(Grid, len(tt.g.grid)), tt.g.validWords, newKeyboard(), tt.g.gameNum}
 		for i, row := range tt.g.grid {
 			copy(g.grid[i], row)
 		}
@@ -203,11 +204,11 @@ var gameOutputToShareTests = map[string]struct {
 }{
 	"5-letter start": {
 		g:        gameTapirStart,
-		expected: "Wordle 0/6\n\n\n",
+		expected: "Wordle 200 0/6\n\n\n",
 	},
 	"5-letter finished": {
 		g: gameTapirFinished,
-		expected: "Wordle 4/6\n\n" +
+		expected: "Wordle 200 4/6\n\n" +
 			"⬜🟨⬜⬜🟨\n" +
 			"🟨🟨🟨⬜⬜\n" +
 			"⬜🟨🟨🟨⬜\n" +
@@ -215,11 +216,11 @@ var gameOutputToShareTests = map[string]struct {
 	},
 	"2-letter start": {
 		g:        gameAtStart,
-		expected: "Wordle 0/1\n\n\n",
+		expected: "Wordle 200 0/1\n\n\n",
 	},
 	"2-letter finished": {
 		g:        gameAtFinished,
-		expected: "Wordle X/1\n\n🟨🟨\n\n",
+		expected: "Wordle 200 X/1\n\n🟨🟨\n\n",
 	},
 }
 

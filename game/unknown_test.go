@@ -227,11 +227,11 @@ var unknownGameOutputToShareTests = map[string]struct {
 }{
 	"5-letter start": {
 		g:        unknownGameTapirStart,
-		expected: "Wordle 0/6\n\n\n",
+		expected: "Wordle 0 0/6\n\n\n",
 	},
 	"5-letter finished": {
 		g: unknownGameTapirFinished,
-		expected: "Wordle 4/6\n\n" +
+		expected: "Wordle 0 4/6\n\n" +
 			"⬜🟨⬜⬜🟨\n" +
 			"🟨🟨🟨⬜⬜\n" +
 			"⬜🟨🟨🟨⬜\n" +
@@ -239,11 +239,11 @@ var unknownGameOutputToShareTests = map[string]struct {
 	},
 	"2-letter start": {
 		g:        unknownGameAtStart,
-		expected: "Wordle 0/1\n\n\n",
+		expected: "Wordle 0 0/1\n\n\n",
 	},
 	"2-letter finished": {
 		g:        unknownGameAtFinished,
-		expected: "Wordle X/1\n\n🟨🟨\n\n",
+		expected: "Wordle 0 X/1\n\n🟨🟨\n\n",
 	},
 }
 

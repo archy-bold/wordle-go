@@ -49,6 +49,7 @@ type game struct {
 	grid       Grid
 	validWords *[]string
 	kb         Keyboard
+	gameNum    int
 }
 
 func (g *game) Play(word string) (bool, error) {
@@ -123,11 +124,11 @@ func (g *game) OutputToShare() string {
 	if !g.complete && g.HasEnded() {
 		score = "X"
 	}
-	return outputGridToShare(g.grid, score, len(g.grid))
+	return outputGridToShare(g.grid, g.gameNum, score, len(g.grid))
 }
 
 // CreateGame creates a game for the given answer and number of allowed tries
-func CreateGame(answer string, tries int, validWords *[]string) Game {
+func CreateGame(answer string, tries int, validWords *[]string, gameNum int) Game {
 	grid := make(Grid, tries)
 
 	return &game{
@@ -137,5 +138,6 @@ func CreateGame(answer string, tries int, validWords *[]string) Game {
 		grid:       grid,
 		validWords: validWords,
 		kb:         newKeyboard(),
+		gameNum:    gameNum,
 	}
 }

@@ -65,9 +65,9 @@ func main() {
 	if *allPtr {
 		sumTries := 0
 		numSuccesses := 0
-		for _, answer := range validWords {
+		for i, answer := range validWords {
 			strat = strategy.NewCharFrequencyStrategy(NUM_LETTERS, letters, validWords, *starterPtr)
-			g := game.CreateGame(answer, NUM_ATTEMPTS, &allAcceptedWords)
+			g := game.CreateGame(answer, NUM_ATTEMPTS, &allAcceptedWords, i+1)
 
 			for {
 				word := strat.GetNextMove()
@@ -158,11 +158,11 @@ func main() {
 	// If no answer given in the word flag, choose
 	answer := *wordPtr
 
+	var gameNum int
 	if answer == "" {
-		var pos int
 		if *randomPtr {
 			rand.Seed(time.Now().Unix())
-			pos = rand.Intn(len(validWords))
+			gameNum = rand.Intn(len(validWords))
 		} else {
 			// Go by date
 			var dt time.Time
@@ -175,11 +175,11 @@ func main() {
 				year, month, day := dt.Date()
 				dt = time.Date(year, month, day, 0, 0, 0, 0, time.UTC)
 			}
-			pos = int(dt.Sub(startDate).Hours() / 24)
+			gameNum = int(dt.Sub(startDate).Hours() / 24)
 		}
-		answer = validWords[pos]
+		answer = validWords[gameNum]
 	}
-	g := game.CreateGame(answer, NUM_ATTEMPTS, &allAcceptedWords)
+	g := game.CreateGame(answer, NUM_ATTEMPTS, &allAcceptedWords, gameNum)
 
 	for {
 		// Play based on whether a strategy is provided

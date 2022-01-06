@@ -66,7 +66,7 @@ func (g *UnknownGame) OutputToShare() string {
 	if !g.complete && g.HasEnded() {
 		score = "X"
 	}
-	return outputGridToShare(g.grid, score, len(g.grid))
+	return outputGridToShare(g.grid, 0, score, len(g.grid))
 }
 
 // CreateGame creates a game for the given answer and number of allowed tries
