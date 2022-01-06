@@ -7,9 +7,10 @@ import (
 )
 
 var (
+	kb                = newKeyboard()
 	validWords        = []string{"group", "prank", "spare", "tapir"}
 	validWords2       = []string{"at", "ta"}
-	gameTapirStart    = &game{false, 0, "tapir", make(Grid, 6), &validWords}
+	gameTapirStart    = &game{false, 0, "tapir", make(Grid, 6), &validWords, kb}
 	gameTapirFinished = &game{true, 4, "tapir", Grid{
 		{GridCell{"g", STATUS_WRONG}, GridCell{"r", STATUS_INCORRECT}, GridCell{"o", STATUS_WRONG}, GridCell{"u", STATUS_WRONG}, GridCell{"p", STATUS_INCORRECT}},
 		{GridCell{"p", STATUS_INCORRECT}, GridCell{"r", STATUS_INCORRECT}, GridCell{"a", STATUS_INCORRECT}, GridCell{"n", STATUS_WRONG}, GridCell{"k", STATUS_WRONG}},
@@ -17,11 +18,11 @@ var (
 		{GridCell{"t", STATUS_CORRECT}, GridCell{"a", STATUS_CORRECT}, GridCell{"p", STATUS_CORRECT}, GridCell{"i", STATUS_CORRECT}, GridCell{"r", STATUS_CORRECT}},
 		nil,
 		nil,
-	}, &validWords}
-	gameAtStart    = &game{false, 0, "at", make(Grid, 1), &validWords2}
+	}, &validWords, kb}
+	gameAtStart    = &game{false, 0, "at", make(Grid, 1), &validWords2, kb}
 	gameAtFinished = &game{false, 1, "at", Grid{
 		{GridCell{"t", STATUS_INCORRECT}, GridCell{"a", STATUS_INCORRECT}},
-	}, &validWords2}
+	}, &validWords2, kb}
 )
 
 var createGameTests = map[string]struct {
@@ -30,9 +31,9 @@ var createGameTests = map[string]struct {
 	validWords *[]string
 	expected   *game
 }{
-	"5 letter, 6 tries":   {"tapir", 6, &validWords, &game{false, 0, "tapir", Grid{nil, nil, nil, nil, nil, nil}, &validWords}},
-	"3 letter, 3 tries":   {"bat", 3, &validWords2, &game{false, 0, "bat", Grid{nil, nil, nil}, &validWords2}},
-	"5 letter, uppercase": {"TAPIR", 6, &validWords, &game{false, 0, "tapir", Grid{nil, nil, nil, nil, nil, nil}, &validWords}},
+	"5 letter, 6 tries":   {"tapir", 6, &validWords, &game{false, 0, "tapir", Grid{nil, nil, nil, nil, nil, nil}, &validWords, kb}},
+	"3 letter, 3 tries":   {"bat", 3, &validWords2, &game{false, 0, "bat", Grid{nil, nil, nil}, &validWords2, kb}},
+	"5 letter, uppercase": {"TAPIR", 6, &validWords, &game{false, 0, "tapir", Grid{nil, nil, nil, nil, nil, nil}, &validWords, kb}},
 }
 
 func Test_CreateGame(t *testing.T) {
@@ -88,7 +89,7 @@ var gamePlayTests = map[string]struct {
 func Test_game_Play(t *testing.T) {
 	for tn, tt := range gamePlayTests {
 		// Copy first
-		g := &game{tt.g.complete, tt.g.attempts, tt.g.answer, make(Grid, len(tt.g.grid)), tt.g.validWords}
+		g := &game{tt.g.complete, tt.g.attempts, tt.g.answer, make(Grid, len(tt.g.grid)), tt.g.validWords, newKeyboard()}
 		for i, row := range tt.g.grid {
 			copy(g.grid[i], row)
 		}
@@ -168,24 +169,25 @@ var gameOutputForConsoleTests = map[string]struct {
 }{
 	"5-letter start": {
 		g:        gameTapirStart,
-		expected: "\n-------\n-------\n",
+		expected: "\n       -------\n       -------\n" + defaulKBOutput,
 	},
 	"5-letter finished": {
 		g: gameTapirFinished,
-		expected: "\n-------\n" +
-			"|G" + COLOUR_RESET + COLOUR_YELLOW + "R" + COLOUR_RESET + "O" + COLOUR_RESET + "U" + COLOUR_RESET + COLOUR_YELLOW + "P" + COLOUR_RESET + "|\n" +
-			"|" + COLOUR_YELLOW + "P" + COLOUR_RESET + COLOUR_YELLOW + "R" + COLOUR_RESET + COLOUR_YELLOW + "A" + COLOUR_RESET + "N" + COLOUR_RESET + "K" + COLOUR_RESET + "|\n" +
-			"|S" + COLOUR_RESET + COLOUR_YELLOW + "P" + COLOUR_RESET + COLOUR_YELLOW + "A" + COLOUR_RESET + COLOUR_YELLOW + "R" + COLOUR_RESET + "E" + COLOUR_RESET + "|\n" +
-			"|" + COLOUR_GREEN + "T" + COLOUR_RESET + COLOUR_GREEN + "A" + COLOUR_RESET + COLOUR_GREEN + "P" + COLOUR_RESET + COLOUR_GREEN + "I" + COLOUR_RESET + COLOUR_GREEN + "R" + COLOUR_RESET + "|\n" +
-			"-------\n",
+		expected: "\n       -------\n" +
+			"       |G" + COLOUR_RESET + COLOUR_YELLOW + "R" + COLOUR_RESET + "O" + COLOUR_RESET + "U" + COLOUR_RESET + COLOUR_YELLOW + "P" + COLOUR_RESET + "|\n" +
+			"       |" + COLOUR_YELLOW + "P" + COLOUR_RESET + COLOUR_YELLOW + "R" + COLOUR_RESET + COLOUR_YELLOW + "A" + COLOUR_RESET + "N" + COLOUR_RESET + "K" + COLOUR_RESET + "|\n" +
+			"       |S" + COLOUR_RESET + COLOUR_YELLOW + "P" + COLOUR_RESET + COLOUR_YELLOW + "A" + COLOUR_RESET + COLOUR_YELLOW + "R" + COLOUR_RESET + "E" + COLOUR_RESET + "|\n" +
+			"       |" + COLOUR_GREEN + "T" + COLOUR_RESET + COLOUR_GREEN + "A" + COLOUR_RESET + COLOUR_GREEN + "P" + COLOUR_RESET + COLOUR_GREEN + "I" + COLOUR_RESET + COLOUR_GREEN + "R" + COLOUR_RESET + "|\n" +
+			"       -------\n" +
+			defaulKBOutput,
 	},
 	"2-letter start": {
 		g:        gameAtStart,
-		expected: "\n----\n----\n",
+		expected: "\n       ----\n       ----\n" + defaulKBOutput,
 	},
 	"2-letter finished": {
 		g:        gameAtFinished,
-		expected: "\n----\n|" + COLOUR_YELLOW + "T" + COLOUR_RESET + COLOUR_YELLOW + "A" + COLOUR_RESET + "|\n----\n",
+		expected: "\n       ----\n       |" + COLOUR_YELLOW + "T" + COLOUR_RESET + COLOUR_YELLOW + "A" + COLOUR_RESET + "|\n       ----\n" + defaulKBOutput,
 	},
 }
 

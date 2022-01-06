@@ -58,7 +58,7 @@ func (g *UnknownGame) GetLastPlay() []GridCell {
 }
 
 func (g *UnknownGame) OutputForConsole() string {
-	return outputGridForConsole(g.grid, g.length)
+	return outputGridForConsole(g.grid, g.length, 0)
 }
 
 func (g *UnknownGame) OutputToShare() string {

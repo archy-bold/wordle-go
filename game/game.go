@@ -48,6 +48,7 @@ type game struct {
 	answer     string
 	grid       Grid
 	validWords *[]string
+	kb         Keyboard
 }
 
 func (g *game) Play(word string) (bool, error) {
@@ -75,6 +76,12 @@ func (g *game) Play(word string) (bool, error) {
 			status = STATUS_INCORRECT
 		} else {
 			status = STATUS_WRONG
+		}
+
+		// Update the keyboard
+		ks := g.kb.GetKeyState(chr)
+		if ks != STATUS_CORRECT && ks != STATUS_WRONG {
+			g.kb.SetKeyState(chr, status)
 		}
 
 		row[i] = GridCell{chr, status}
@@ -108,7 +115,7 @@ func (g *game) GetLastPlay() []GridCell {
 }
 
 func (g *game) OutputForConsole() string {
-	return outputGridForConsole(g.grid, len(g.answer))
+	return outputGridForConsole(g.grid, len(g.answer), 7) + g.kb.OutputForConsole()
 }
 
 func (g *game) OutputToShare() string {
@@ -123,5 +130,12 @@ func (g *game) OutputToShare() string {
 func CreateGame(answer string, tries int, validWords *[]string) Game {
 	grid := make(Grid, tries)
 
-	return &game{false, 0, strings.ToLower(answer), grid, validWords}
+	return &game{
+		complete:   false,
+		attempts:   0,
+		answer:     strings.ToLower(answer),
+		grid:       grid,
+		validWords: validWords,
+		kb:         newKeyboard(),
+	}
 }

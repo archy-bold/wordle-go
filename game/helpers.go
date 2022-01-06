@@ -13,16 +13,18 @@ const (
 	COLOUR_RESET  = "\033[0m"
 	COLOUR_GREEN  = "\033[32m"
 	COLOUR_YELLOW = "\033[33m"
+	COLOUR_GREY   = "\u001b[30;1m"
 )
 
-func outputGridForConsole(grid [][]GridCell, length int) string {
-	str := "\n" + strings.Repeat("-", length+2) + "\n"
+func outputGridForConsole(grid [][]GridCell, length int, numSpaces int) string {
+	spacing := strings.Repeat(" ", numSpaces)
+	str := "\n" + spacing + strings.Repeat("-", length+2) + "\n"
 	for _, row := range grid {
 		if len(row) == 0 {
 			break
 		}
 
-		str += "|"
+		str += spacing + "|"
 		for _, cell := range row {
 			switch cell.Status {
 			case STATUS_CORRECT:
@@ -34,7 +36,7 @@ func outputGridForConsole(grid [][]GridCell, length int) string {
 		}
 		str += "|\n"
 	}
-	str += strings.Repeat("-", length+2) + "\n"
+	str += spacing + strings.Repeat("-", length+2) + "\n"
 
 	return str
 }
