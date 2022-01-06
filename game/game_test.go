@@ -89,14 +89,14 @@ func Test_game_Play(t *testing.T) {
 
 			// Make the assertions
 			if tt.expectedErr != "" {
-				assert.Falsef(t, res, "Expected res false for test '%s'", tn)
-				assert.Errorf(t, err, "Expected error to match for test '%s'", tn)
+				assert.Falsef(t, res, "Expected res false for test '%s', try %d", tn, i)
+				assert.Errorf(t, err, "Expected error to match for test '%s', try %d", tn, i)
 			} else {
-				assert.NoErrorf(t, err, "Expected nil error for test '%s'", tn)
-				assert.Equalf(t, tt.expected[i], res, "Expected play outcome to match for test '%s'", tn)
-				assert.Equalf(t, tt.expected[i], g.complete, "Expected complete to match for test '%s'", tn)
-				assert.Equalf(t, tt.expectedGrid[i], g.grid[i], "Expected grid row to match for test '%s'", tn)
-				assert.Equalf(t, i+1, g.attempts, "Expected attempts to match for test '%s'", tn)
+				assert.NoErrorf(t, err, "Expected nil error for test '%s', try %d", tn, i)
+				assert.Equalf(t, tt.expected[i], res, "Expected play outcome to match for test '%s', try %d", tn, i)
+				assert.Equalf(t, tt.expected[i], g.complete, "Expected complete to match for test '%s', try %d", tn, i)
+				assert.Equalf(t, tt.expectedGrid[i], g.grid[i], "Expected grid row to match for test '%s', try %d", tn, i)
+				assert.Equalf(t, i+1, g.attempts, "Expected attempts to match for test '%s', try %d", tn, i)
 			}
 		}
 	}

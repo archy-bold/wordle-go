@@ -1,6 +1,10 @@
 package game
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/pkg/errors"
+)
 
 type UnknownGame struct {
 	complete bool
@@ -15,8 +19,12 @@ func (g *UnknownGame) Play(word string) (bool, error) {
 }
 
 func (g *UnknownGame) AddResult(row []GridCell) (bool, error) {
-	// TODO handle errors where the length isn't right
-	g.grid = append(g.grid, row)
+	// Handle errors where the length isn't right
+	if len(row) != g.length {
+		return false, errors.Wrap(ErrWrongWordLength, fmt.Sprint(len(row)))
+	}
+
+	g.grid[g.attempts] = row
 	g.attempts++
 
 	// Check if it's a winner
@@ -43,6 +51,9 @@ func (g *UnknownGame) GetScore() (int, int) {
 }
 
 func (g *UnknownGame) GetLastPlay() []GridCell {
+	if g.attempts == 0 {
+		return nil
+	}
 	return g.grid[g.attempts-1]
 }
 
@@ -61,7 +72,7 @@ func (g *UnknownGame) OutputToShare() string {
 // CreateGame creates a game for the given answer and number of allowed tries
 func CreateUnknownGame(length int, tries int) Game {
 	// TODO include valid entries
-	grid := make([][]GridCell, tries)
+	grid := make(Grid, tries)
 
 	return &UnknownGame{false, 0, length, grid}
 }
