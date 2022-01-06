@@ -120,7 +120,7 @@ func main() {
 			}
 			wordParts := strings.Split(word, "")
 
-			fmt.Print("Enter the result, where x is incorrect, o is wrong position, y is correct eg yxxox: ")
+			fmt.Print("Enter the result, where x is incorrect, o is wrong position, y is correct\n eg yxxox: ")
 			input, _ := reader.ReadString('\n')
 			parts := strings.Split(strings.TrimSpace((input)), "")
 			row := make([]game.GridCell, NUM_LETTERS)
