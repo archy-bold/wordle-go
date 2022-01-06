@@ -3,6 +3,8 @@ package game
 import (
 	"fmt"
 	"strings"
+
+	"github.com/pkg/errors"
 )
 
 // CellStatus represents whether a cell is in a state of empty, correct, incorrect or wrong
@@ -48,7 +50,10 @@ type game struct {
 }
 
 func (g *game) Play(word string) (bool, error) {
-	// TODO check the word length here and error if too long/short
+	// Check the word length here and error if too long/short
+	if len(word) != len(g.answer) {
+		return false, errors.Wrap(ErrWrongWordLength, fmt.Sprint(len(word)))
+	}
 
 	// Create the row for the grid
 	word = strings.ToLower(word)

@@ -59,6 +59,16 @@ var gamePlayTests = map[string]struct {
 		expected:     []bool{false, false, false, true},
 		expectedGrid: gameTapirFinished.grid,
 	},
+	"5-letter, try 4-letter word": {
+		g:           gameTapirStart,
+		tries:       []string{"tape"},
+		expectedErr: "The entered word length is wrong, should be: 5",
+	},
+	"5-letter, try 6-letter word": {
+		g:           gameTapirStart,
+		tries:       []string{"strong"},
+		expectedErr: "The entered word length is wrong, should be: 5",
+	},
 	"2-letter, lost": {
 		g:            gameAtStart,
 		tries:        []string{"ta"},
@@ -75,13 +85,19 @@ func Test_game_Play(t *testing.T) {
 			copy(g.grid[i], row)
 		}
 		for i, word := range tt.tries {
-			res, _ := g.Play(word)
+			res, err := g.Play(word)
 
 			// Make the assertions
-			assert.Equalf(t, tt.expected[i], res, "Expected play outcome to match for test '%s'", tn)
-			assert.Equalf(t, tt.expected[i], g.complete, "Expected complete to match for test '%s'", tn)
-			assert.Equalf(t, tt.expectedGrid[i], g.grid[i], "Expected grid row to match for test '%s'", tn)
-			assert.Equalf(t, i+1, g.attempts, "Expected attempts to match for test '%s'", tn)
+			if tt.expectedErr != "" {
+				assert.Falsef(t, res, "Expected res false for test '%s'", tn)
+				assert.Errorf(t, err, "Expected error to match for test '%s'", tn)
+			} else {
+				assert.NoErrorf(t, err, "Expected nil error for test '%s'", tn)
+				assert.Equalf(t, tt.expected[i], res, "Expected play outcome to match for test '%s'", tn)
+				assert.Equalf(t, tt.expected[i], g.complete, "Expected complete to match for test '%s'", tn)
+				assert.Equalf(t, tt.expectedGrid[i], g.grid[i], "Expected grid row to match for test '%s'", tn)
+				assert.Equalf(t, i+1, g.attempts, "Expected attempts to match for test '%s'", tn)
+			}
 		}
 	}
 }
