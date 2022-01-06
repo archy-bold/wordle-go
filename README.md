@@ -22,6 +22,15 @@ cd wordle-go
 go build -o wordle
 ```
 
+## Install
+
+To install to your `$GOPATH` bin folder, run the following;
+
+```bash
+go install && mv $GOPATH/bin/wordle-go $GOPATH/bin/wordle
+wordle
+```
+
 ## Run
 
 Run the command with no arguments to play a game with today's word.
