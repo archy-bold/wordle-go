@@ -29,7 +29,7 @@ func outputGridForConsole(grid [][]GridCell, length int) string {
 			case STATUS_INCORRECT:
 				str += COLOUR_YELLOW
 			}
-			str += cell.Letter + COLOUR_RESET
+			str += strings.ToUpper(cell.Letter) + COLOUR_RESET
 		}
 		str += "|\n"
 	}

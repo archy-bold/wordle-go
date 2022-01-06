@@ -27,9 +27,9 @@ var createGameTests = map[string]struct {
 	tries    int
 	expected *game
 }{
-	"5 letter, 6 tries": {"tapir", 6, &game{false, 0, "tapir", Grid{nil, nil, nil, nil, nil, nil}}},
-	"3 letter, 3 tries": {"bat", 3, &game{false, 0, "bat", Grid{nil, nil, nil}}},
-	// "5 letter, uppercase": {"TAPIR", 6, &game{false, 0, "tapir", Grid{nil, nil, nil, nil, nil, nil}}},
+	"5 letter, 6 tries":   {"tapir", 6, &game{false, 0, "tapir", Grid{nil, nil, nil, nil, nil, nil}}},
+	"3 letter, 3 tries":   {"bat", 3, &game{false, 0, "bat", Grid{nil, nil, nil}}},
+	"5 letter, uppercase": {"TAPIR", 6, &game{false, 0, "tapir", Grid{nil, nil, nil, nil, nil, nil}}},
 }
 
 func Test_CreateGame(t *testing.T) {
@@ -50,6 +50,12 @@ var gamePlayTests = map[string]struct {
 	"5-letter, won": {
 		g:            gameTapirStart,
 		tries:        []string{"group", "prank", "spare", "tapir"},
+		expected:     []bool{false, false, false, true},
+		expectedGrid: gameTapirFinished.grid,
+	},
+	"5-letter, mixed case": {
+		g:            gameTapirStart,
+		tries:        []string{"grOUp", "PRAnk", "sPaRE", "TAPIR"},
 		expected:     []bool{false, false, false, true},
 		expectedGrid: gameTapirFinished.grid,
 	},
@@ -143,10 +149,10 @@ var gameOutputForConsoleTests = map[string]struct {
 	"5-letter finished": {
 		g: gameTapirFinished,
 		expected: "\n-------\n" +
-			"|g" + COLOUR_RESET + COLOUR_YELLOW + "r" + COLOUR_RESET + "o" + COLOUR_RESET + "u" + COLOUR_RESET + COLOUR_YELLOW + "p" + COLOUR_RESET + "|\n" +
-			"|" + COLOUR_YELLOW + "p" + COLOUR_RESET + COLOUR_YELLOW + "r" + COLOUR_RESET + COLOUR_YELLOW + "a" + COLOUR_RESET + "n" + COLOUR_RESET + "k" + COLOUR_RESET + "|\n" +
-			"|s" + COLOUR_RESET + COLOUR_YELLOW + "p" + COLOUR_RESET + COLOUR_YELLOW + "a" + COLOUR_RESET + COLOUR_YELLOW + "r" + COLOUR_RESET + "e" + COLOUR_RESET + "|\n" +
-			"|" + COLOUR_GREEN + "t" + COLOUR_RESET + COLOUR_GREEN + "a" + COLOUR_RESET + COLOUR_GREEN + "p" + COLOUR_RESET + COLOUR_GREEN + "i" + COLOUR_RESET + COLOUR_GREEN + "r" + COLOUR_RESET + "|\n" +
+			"|G" + COLOUR_RESET + COLOUR_YELLOW + "R" + COLOUR_RESET + "O" + COLOUR_RESET + "U" + COLOUR_RESET + COLOUR_YELLOW + "P" + COLOUR_RESET + "|\n" +
+			"|" + COLOUR_YELLOW + "P" + COLOUR_RESET + COLOUR_YELLOW + "R" + COLOUR_RESET + COLOUR_YELLOW + "A" + COLOUR_RESET + "N" + COLOUR_RESET + "K" + COLOUR_RESET + "|\n" +
+			"|S" + COLOUR_RESET + COLOUR_YELLOW + "P" + COLOUR_RESET + COLOUR_YELLOW + "A" + COLOUR_RESET + COLOUR_YELLOW + "R" + COLOUR_RESET + "E" + COLOUR_RESET + "|\n" +
+			"|" + COLOUR_GREEN + "T" + COLOUR_RESET + COLOUR_GREEN + "A" + COLOUR_RESET + COLOUR_GREEN + "P" + COLOUR_RESET + COLOUR_GREEN + "I" + COLOUR_RESET + COLOUR_GREEN + "R" + COLOUR_RESET + "|\n" +
 			"-------\n",
 	},
 	"2-letter start": {
@@ -155,7 +161,7 @@ var gameOutputForConsoleTests = map[string]struct {
 	},
 	"2-letter finished": {
 		g:        gameAtFinished,
-		expected: "\n----\n|" + COLOUR_YELLOW + "t" + COLOUR_RESET + COLOUR_YELLOW + "a" + COLOUR_RESET + "|\n----\n",
+		expected: "\n----\n|" + COLOUR_YELLOW + "T" + COLOUR_RESET + COLOUR_YELLOW + "A" + COLOUR_RESET + "|\n----\n",
 	},
 }
 

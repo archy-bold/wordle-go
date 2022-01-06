@@ -51,6 +51,7 @@ func (g *game) Play(word string) (bool, error) {
 	// TODO check the word length here and error if too long/short
 
 	// Create the row for the grid
+	word = strings.ToLower(word)
 	parts := strings.Split(word, "")
 	answerParts := strings.Split(g.answer, "")
 	row := make([]GridCell, len(parts))
@@ -111,5 +112,5 @@ func CreateGame(answer string, tries int) Game {
 	// TODO include valid entries
 	grid := make(Grid, tries)
 
-	return &game{false, 0, answer, grid}
+	return &game{false, 0, strings.ToLower(answer), grid}
 }
