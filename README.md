@@ -1,5 +1,7 @@
 # Wordle Command Line
 
+![wordle command line tool running](https://media.giphy.com/media/35BYFJGLLiRze1NVkZ/giphy.gif)
+
 A Wordle implementation for the command line, written in go.
 
 ## Get It
