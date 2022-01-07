@@ -20,6 +20,7 @@ type CharFrequencyStrategy struct {
 	wordLength          int
 	letters             map[string]bool
 	possibleAnswers     []string
+	allWords            *[]string
 	histogram           map[string]HistogramEntry
 	rankedWords         PairList
 	answersCorrect      []string
@@ -186,7 +187,7 @@ func (s *CharFrequencyStrategy) GetSuggestions(n int) PairList {
 }
 
 // NewCharFrequencyStrategy create a char frequency-based strategy given the word list and letters list
-func NewCharFrequencyStrategy(wordLength int, letters []string, validAnswers []string, starter string) Strategy {
+func NewCharFrequencyStrategy(wordLength int, letters []string, validAnswers []string, allAcceptedWords *[]string, starter string) Strategy {
 	lettersMap := map[string]bool{}
 	for _, l := range letters {
 		lettersMap[l] = true
@@ -197,6 +198,7 @@ func NewCharFrequencyStrategy(wordLength int, letters []string, validAnswers []s
 		wordLength:       wordLength,
 		letters:          lettersMap,
 		possibleAnswers:  validAnswers,
+		allWords:         allAcceptedWords,
 		answersCorrect:   make([]string, wordLength),
 		answersIncorrect: make([][]string, wordLength),
 	}

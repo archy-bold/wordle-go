@@ -58,7 +58,7 @@ func main() {
 
 	var strat strategy.Strategy
 	if auto {
-		strat = strategy.NewCharFrequencyStrategy(NUM_LETTERS, letters, validWords, *starterPtr)
+		strat = strategy.NewCharFrequencyStrategy(NUM_LETTERS, letters, validWords, &allAcceptedWords, *starterPtr)
 	}
 
 	// Play out all permutations
@@ -66,7 +66,7 @@ func main() {
 		sumTries := 0
 		numSuccesses := 0
 		for i, answer := range validWords {
-			strat = strategy.NewCharFrequencyStrategy(NUM_LETTERS, letters, validWords, *starterPtr)
+			strat = strategy.NewCharFrequencyStrategy(NUM_LETTERS, letters, validWords, &allAcceptedWords, *starterPtr)
 			g := game.CreateGame(answer, NUM_ATTEMPTS, &allAcceptedWords, i+1)
 
 			for {
@@ -97,7 +97,7 @@ func main() {
 
 	// Cheat mode
 	if *cheatPtr {
-		strat = strategy.NewCharFrequencyStrategy(NUM_LETTERS, letters, validWords, *starterPtr)
+		strat = strategy.NewCharFrequencyStrategy(NUM_LETTERS, letters, validWords, &allAcceptedWords, *starterPtr)
 		ug := game.CreateUnknownGame(NUM_LETTERS, NUM_ATTEMPTS)
 		for {
 
