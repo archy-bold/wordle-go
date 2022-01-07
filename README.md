@@ -44,7 +44,8 @@ Run the command with no arguments to play a game with today's word.
 - `-cheat` - Runs in solve mode to work out an existing wordle. Follow the instructions to enter your results and receive suggested words to play.
 - `-random` - Choose a random word instead of today's
 - `-auto` - Automatically completes the puzzle
+- `-starter=[word]` - Specify the starter word for strategies
 - `-date=[2021-12-31]` - Set the winning word from a specific date
 - `-word=[answer]` - Set the winning word with this argument.
 - `-all` - Runs the auto-solver through every permutation, giving results when complete.
-- `-starter=[word]` - Specify the starter word for strategies
+- `-all-staters=[answers|valid]` - Run the auto-solver through all game permutations in turn with each starter. Starters list comprises either the answers list (2315 iterations) or the valid words list (12972 words).

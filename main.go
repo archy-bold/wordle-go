@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"errors"
 	"flag"
 	"fmt"
 	"math/rand"
@@ -9,6 +10,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/archy-bold/wordle-go/game"
@@ -20,12 +22,22 @@ const (
 	NUM_ATTEMPTS = 6
 )
 
+var ErrAllStartersFlagInvalid = errors.New("all-starters flag must be one of: valid, answers")
+
 var letters = []string{"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"}
 var startDate = time.Date(2021, time.June, 19, 0, 0, 0, 0, time.UTC)
 var validWords = []string{}
 var allAcceptedWords = []string{}
 
 // var dictionary = map[string]int{}
+
+type wordAnalysisResult struct {
+	word        string
+	successes   int
+	sumTries    int
+	avgTries    float64
+	longestGame int
+}
 
 func main() {
 	wordPtr := flag.String("word", "", "The game's answer")
@@ -34,8 +46,14 @@ func main() {
 	randomPtr := flag.Bool("random", false, "Choose a random word, if none specified. Otherwise gets daily word")
 	datePtr := flag.String("date", "", "If specified, will choose the word for this day")
 	starterPtr := flag.String("starter", "", "The starter word to use in strategies")
-	allPtr := flag.Bool("all", false, "Play all permutations")
+	allPtr := flag.Bool("all", false, "Play all permutations of the answers")
+	allStartersPtr := flag.String("all-starters", "", "Play all permutations of the answers, with all permutations of the chosen starter list. Starter options are: valid (12972 iterations), answers (2315 iterations)")
 	flag.Parse()
+
+	if *allStartersPtr != "" && *allStartersPtr != "valid" && *allStartersPtr != "answers" {
+		fmt.Println(ErrAllStartersFlagInvalid.Error())
+		return
+	}
 
 	auto := *autoPtr
 
@@ -91,6 +109,97 @@ func main() {
 
 		fmt.Printf("Completed %d/%d\n", numSuccesses, len(validWords))
 		fmt.Printf("On average %f\n", float64(sumTries)/float64(numSuccesses))
+
+		return
+	} else if *allStartersPtr != "" {
+		var results []wordAnalysisResult
+		var words []string
+		if *allStartersPtr == "answers" {
+			words = validWords
+		} else {
+			words = allAcceptedWords
+		}
+		results = make([]wordAnalysisResult, len(words))
+
+		for i, starter := range words {
+
+			var wg sync.WaitGroup
+			wg.Add(len(validWords))
+
+			fmt.Printf("%4d %s ", i, starter)
+
+			result := wordAnalysisResult{
+				word:        starter,
+				successes:   0,
+				sumTries:    0,
+				avgTries:    0,
+				longestGame: 0,
+			}
+			var resMutex sync.Mutex
+
+			for _, answer := range validWords {
+				go func(result *wordAnalysisResult, resMutex *sync.Mutex, answer string) {
+					strat := strategy.NewCharFrequencyStrategy(NUM_LETTERS, letters, validWords, &allAcceptedWords, starter)
+					g := game.CreateGame(answer, 15, &allAcceptedWords, i+1)
+
+					for {
+						word := strat.GetNextMove()
+						success, _ := g.Play(word)
+						strat.SetMoveOutcome(g.GetLastPlay())
+
+						if success {
+							resMutex.Lock()
+							score, _ := g.GetScore()
+							result.sumTries += score
+							if score <= NUM_ATTEMPTS {
+								result.successes++
+							}
+							if result.longestGame < score {
+								result.longestGame = score
+							}
+							resMutex.Unlock()
+							wg.Done()
+							return
+						} else if g.HasEnded() {
+							wg.Done()
+							return
+						}
+					}
+				}(&result, &resMutex, answer)
+			}
+
+			wg.Wait()
+
+			result.avgTries = float64(result.sumTries) / float64(result.successes)
+			fmt.Printf("%4d %d %f\n", result.successes, result.longestGame, result.avgTries)
+
+			results[i] = result
+		}
+
+		// Sort by successes first
+		sort.Slice(results, func(i, j int) bool {
+			return results[i].successes > results[j].successes
+		})
+		fmt.Println("\nRanking: Num Successes")
+		for i := 0; i < 50; i++ {
+			res := results[i]
+			fmt.Printf("%d. %s %d %d %f\n", i+1, res.word, res.successes, res.longestGame, res.avgTries)
+		}
+		// Then average tries
+		sort.Slice(results, func(i, j int) bool {
+			return results[i].avgTries < results[j].avgTries
+		})
+		fmt.Println("\nRanking: Average Tries")
+		for i := 0; i < 50; i++ {
+			res := results[i]
+			fmt.Printf("%d. %s %d %d %f\n", i+1, res.word, res.successes, res.longestGame, res.avgTries)
+		}
+		// Finally the longest game
+		sort.Slice(results, func(i, j int) bool {
+			return results[i].longestGame > results[j].longestGame
+		})
+		fmt.Println("\nRanking: Longest Game")
+		fmt.Printf(" %s %d %d %f\n", results[0].word, results[0].successes, results[0].longestGame, results[0].avgTries)
 
 		return
 	}
