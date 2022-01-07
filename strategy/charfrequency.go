@@ -23,52 +23,7 @@ type CharFrequencyStrategy struct {
 	allWords            *[]string
 	histogram           map[string]HistogramEntry
 	rankedWords         PairList
-	answersCorrect      []string
-	answersIncorrect    [][]string
 	answersIncorrectAll []string
-}
-
-func (s *CharFrequencyStrategy) filterWords(hint []game.GridCell) {
-	filteredWords := make([]string, 0)
-
-word:
-	for _, word := range s.possibleAnswers {
-		chrs := strings.Split(word, "")
-
-		// Filter any words where incorrect characters don't exist
-		if len(s.answersIncorrectAll) > 0 {
-			diff := difference(s.answersIncorrectAll, chrs)
-			if len(diff) > 0 {
-				continue word
-			}
-		}
-
-		for i, chr := range chrs {
-			// Filter out if this char has been eliminated
-			if !s.letters[chr] {
-				continue word
-			}
-
-			// Filter out if this is position has been found to be correct and this char doesn't match
-			if s.answersCorrect[i] != "" && s.answersCorrect[i] != chr {
-				continue word
-			}
-
-			// Also filter out if there's an incorrect answer in this position
-			if len(s.answersIncorrect[i]) > 0 {
-				for _, ai := range s.answersIncorrect[i] {
-					if ai == chr {
-						continue word
-					}
-				}
-			}
-		}
-
-		// Add to the list if the word is still possible
-		filteredWords = append(filteredWords, word)
-	}
-
-	s.possibleAnswers = filteredWords
 }
 
 func (s *CharFrequencyStrategy) buildHistogram() {
@@ -103,8 +58,9 @@ func (s *CharFrequencyStrategy) buildHistogram() {
 
 func (s *CharFrequencyStrategy) rankWords() {
 	s.rankedWords = make(PairList, len(s.possibleAnswers))
+	words := s.possibleAnswers
 
-	for _, word := range s.possibleAnswers {
+	for i, word := range words {
 		chrs := strings.Split(word, "")
 		// First set the score based on the letters that exist
 		checkedChars := map[string]bool{}
@@ -127,7 +83,7 @@ func (s *CharFrequencyStrategy) rankWords() {
 		}
 
 		// Add to the ranked list
-		s.rankedWords = append(s.rankedWords, Pair{word, score})
+		s.rankedWords[i] = Pair{word, score}
 	}
 
 	// Sort the
@@ -163,17 +119,14 @@ func (s *CharFrequencyStrategy) SetMoveOutcome(row []game.GridCell) {
 			}
 			rejected[i] = true
 		case game.STATUS_INCORRECT:
-			s.answersIncorrect[i] = append(s.answersIncorrect[i], cell.Letter)
 			s.answersIncorrectAll = append(s.answersIncorrectAll, cell.Letter)
-		case game.STATUS_CORRECT:
-			s.answersCorrect[i] = cell.Letter
 		}
 	}
 
 	s.attempts++
 
 	// Rebuild the histogram and ranking
-	s.filterWords(row)
+	s.possibleAnswers = filterWordsList(s.possibleAnswers, row)
 	s.buildHistogram()
 	s.rankWords()
 }
@@ -194,13 +147,11 @@ func NewCharFrequencyStrategy(wordLength int, letters []string, validAnswers []s
 	}
 
 	s := &CharFrequencyStrategy{
-		starter:          starter,
-		wordLength:       wordLength,
-		letters:          lettersMap,
-		possibleAnswers:  validAnswers,
-		allWords:         allAcceptedWords,
-		answersCorrect:   make([]string, wordLength),
-		answersIncorrect: make([][]string, wordLength),
+		starter:         starter,
+		wordLength:      wordLength,
+		letters:         lettersMap,
+		possibleAnswers: validAnswers,
+		allWords:        allAcceptedWords,
 	}
 
 	if starter == "" {

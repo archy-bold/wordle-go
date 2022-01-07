@@ -16,6 +16,26 @@ const (
 	COLOUR_GREY   = "\u001b[30;1m"
 )
 
+func EvaluateGuess(guess string, answer string) []GridCell {
+	parts := strings.Split(guess, "")
+	answerParts := strings.Split(answer, "")
+	row := make([]GridCell, len(parts))
+	for i, chr := range parts {
+		var status CellStatus
+		if chr == answerParts[i] {
+			status = STATUS_CORRECT
+		} else if stringInSlice(chr, answerParts) {
+			status = STATUS_INCORRECT
+		} else {
+			status = STATUS_WRONG
+		}
+
+		row[i] = GridCell{chr, status}
+	}
+
+	return row
+}
+
 func outputGridForConsole(grid [][]GridCell, length int, numSpaces int) string {
 	spacing := strings.Repeat(" ", numSpaces)
 	str := "\n" + spacing + strings.Repeat("-", length+2) + "\n"

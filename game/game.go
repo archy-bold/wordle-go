@@ -66,26 +66,13 @@ func (g *game) Play(word string) (bool, error) {
 	}
 
 	// Create the row for the grid
-	parts := strings.Split(word, "")
-	answerParts := strings.Split(g.answer, "")
-	row := make([]GridCell, len(parts))
-	for i, chr := range parts {
-		var status CellStatus
-		if chr == answerParts[i] {
-			status = STATUS_CORRECT
-		} else if stringInSlice(chr, answerParts) {
-			status = STATUS_INCORRECT
-		} else {
-			status = STATUS_WRONG
-		}
-
-		// Update the keyboard
-		ks := g.kb.GetKeyState(chr)
+	row := EvaluateGuess(word, g.answer)
+	// Also update the keyboard
+	for _, cell := range row {
+		ks := g.kb.GetKeyState(cell.Letter)
 		if ks != STATUS_CORRECT && ks != STATUS_WRONG {
-			g.kb.SetKeyState(chr, status)
+			g.kb.SetKeyState(cell.Letter, cell.Status)
 		}
-
-		row[i] = GridCell{chr, status}
 	}
 
 	// Update the game
