@@ -89,6 +89,7 @@ func main() {
 	if *allPtr {
 		sumTries := 0
 		numSuccesses := 0
+		longestGame := 0
 		for i, answer := range validWords {
 			strat = getStrategy(*strategyPtr, *starterPtr)
 			g := game.CreateGame(answer, NUM_ATTEMPTS, &allAcceptedWords, i+1)
@@ -100,13 +101,16 @@ func main() {
 
 				if success {
 					score, of := g.GetScore()
-					fmt.Printf("%s in %d/%d\n", answer, score, of)
+					fmt.Printf("%4d %s in %d/%d\n", i, answer, score, of)
 					numSuccesses++
 					sumTries += score
+					if longestGame < score {
+						longestGame = score
+					}
 
 					break
 				} else if g.HasEnded() {
-					fmt.Printf("%s failed\n", answer)
+					fmt.Printf("%4d %s failed\n", i, answer)
 					break
 				}
 
@@ -115,6 +119,7 @@ func main() {
 
 		fmt.Printf("Completed %d/%d\n", numSuccesses, len(validWords))
 		fmt.Printf("On average %f\n", float64(sumTries)/float64(numSuccesses))
+		fmt.Printf("Longest game %d/%d\n", longestGame, NUM_ATTEMPTS)
 
 		return
 	} else if *allStartersPtr != "" {
