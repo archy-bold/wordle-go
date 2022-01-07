@@ -201,10 +201,12 @@ func NewCharFrequencyStrategy(wordLength int, letters []string, validAnswers []s
 		answersIncorrect: make([][]string, wordLength),
 	}
 
-	// Initialise the histogram
-	s.buildHistogram()
-	// Rank the words
-	s.rankWords()
+	if starter == "" {
+		// Initialise the histogram
+		s.buildHistogram()
+		// Rank the words
+		s.rankWords()
+	}
 
 	return s
 }
