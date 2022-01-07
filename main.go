@@ -23,6 +23,7 @@ const (
 )
 
 var ErrAllStartersFlagInvalid = errors.New("all-starters flag must be one of: valid, answers")
+var ErrStrategyFlagInvalid = errors.New("strategy flag must be one of: minmax, charfreq")
 
 var letters = []string{"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"}
 var startDate = time.Date(2021, time.June, 19, 0, 0, 0, 0, time.UTC)
@@ -43,6 +44,7 @@ func main() {
 	wordPtr := flag.String("word", "", "The game's answer")
 	cheatPtr := flag.Bool("cheat", false, "Whether to run the solver mode")
 	autoPtr := flag.Bool("auto", false, "Play the game automatically")
+	strategyPtr := flag.String("strategy", "charfreq", "Choose which strategy to use. One of 'minmax' (slow, effective) or 'charfreq' (fast, less effective).")
 	randomPtr := flag.Bool("random", false, "Choose a random word, if none specified. Otherwise gets daily word")
 	datePtr := flag.String("date", "", "If specified, will choose the word for this day")
 	starterPtr := flag.String("starter", "", "The starter word to use in strategies")
@@ -52,6 +54,10 @@ func main() {
 
 	if *allStartersPtr != "" && *allStartersPtr != "valid" && *allStartersPtr != "answers" {
 		fmt.Println(ErrAllStartersFlagInvalid.Error())
+		return
+	}
+	if *strategyPtr != "" && *strategyPtr != "minmax" && *strategyPtr != "charfreq" {
+		fmt.Println(ErrStrategyFlagInvalid.Error())
 		return
 	}
 
@@ -76,7 +82,7 @@ func main() {
 
 	var strat strategy.Strategy
 	if auto {
-		strat = strategy.NewCharFrequencyStrategy(NUM_LETTERS, letters, validWords, &allAcceptedWords, *starterPtr)
+		strat = getStrategy(*strategyPtr, *starterPtr)
 	}
 
 	// Play out all permutations
@@ -84,7 +90,7 @@ func main() {
 		sumTries := 0
 		numSuccesses := 0
 		for i, answer := range validWords {
-			strat = strategy.NewCharFrequencyStrategy(NUM_LETTERS, letters, validWords, &allAcceptedWords, *starterPtr)
+			strat = getStrategy(*strategyPtr, *starterPtr)
 			g := game.CreateGame(answer, NUM_ATTEMPTS, &allAcceptedWords, i+1)
 
 			for {
@@ -206,7 +212,7 @@ func main() {
 
 	// Cheat mode
 	if *cheatPtr {
-		strat = strategy.NewCharFrequencyStrategy(NUM_LETTERS, letters, validWords, &allAcceptedWords, *starterPtr)
+		strat = getStrategy(*strategyPtr, *starterPtr)
 		ug := game.CreateUnknownGame(NUM_LETTERS, NUM_ATTEMPTS)
 		for {
 
@@ -329,6 +335,13 @@ func check(e error) {
 	if e != nil {
 		panic(e)
 	}
+}
+
+func getStrategy(strat string, starter string) strategy.Strategy {
+	if strat == "minmax" {
+		return strategy.NewMinMaxStrategy(NUM_LETTERS, validWords, &allAcceptedWords, starter)
+	}
+	return strategy.NewCharFrequencyStrategy(NUM_LETTERS, letters, validWords, &allAcceptedWords, starter)
 }
 
 func readWordList(arr *[]string, fname string) error {
